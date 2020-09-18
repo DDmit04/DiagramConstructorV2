@@ -1,0 +1,6 @@
+Excaption date: 17.09.2020 19:55:37
+exceptionType: System.Exception
+exceptionMessage:Exception
+Stacktrace: 
+   в DiagramConsructorV2.src.DiagramCreator.createDiagram(String code, String diagramFilepath, Boolean closeAfterBuild) в C:\Users\danya\source\repos\DiagramConsructorV2\DiagramConsructorV2\src\DiagramCreator.cs:строка 47
+   в DiagramConsructorV2.MainWindow.createDiagramBtn_Click(Object sender, RoutedEventArgs e) в C:\Users\danya\source\repos\DiagramConsructorV2\DiagramConsructorV2\MainWindow.xaml.cs:строка 145

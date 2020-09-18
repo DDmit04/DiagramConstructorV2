@@ -1,0 +1,17 @@
+C:\Users\danya\source\repos\DiagramConsructorV2\DiagramConsructorV2\bin\Debug\DiagramConsructorV2.exe.config
+C:\Users\danya\source\repos\DiagramConsructorV2\DiagramConsructorV2\bin\Debug\DiagramConsructorV2.exe
+C:\Users\danya\source\repos\DiagramConsructorV2\DiagramConsructorV2\bin\Debug\DiagramConsructorV2.pdb
+C:\Users\danya\source\repos\DiagramConsructorV2\DiagramConsructorV2\obj\Debug\DiagramConsructorV2.csprojAssemblyReference.cache
+C:\Users\danya\source\repos\DiagramConsructorV2\DiagramConsructorV2\obj\Debug\MainWindow.g.cs
+C:\Users\danya\source\repos\DiagramConsructorV2\DiagramConsructorV2\obj\Debug\App.g.cs
+C:\Users\danya\source\repos\DiagramConsructorV2\DiagramConsructorV2\obj\Debug\DiagramConsructorV2_MarkupCompile.cache
+C:\Users\danya\source\repos\DiagramConsructorV2\DiagramConsructorV2\obj\Debug\DiagramConsructorV2_MarkupCompile.lref
+C:\Users\danya\source\repos\DiagramConsructorV2\DiagramConsructorV2\obj\Debug\MainWindow.baml
+C:\Users\danya\source\repos\DiagramConsructorV2\DiagramConsructorV2\obj\Debug\DiagramConsructorV2.g.resources
+C:\Users\danya\source\repos\DiagramConsructorV2\DiagramConsructorV2\obj\Debug\DiagramConsructorV2.Properties.Resources.resources
+C:\Users\danya\source\repos\DiagramConsructorV2\DiagramConsructorV2\obj\Debug\DiagramConsructorV2.csproj.GenerateResource.cache
+C:\Users\danya\source\repos\DiagramConsructorV2\DiagramConsructorV2\obj\Debug\DiagramConsructorV2.csproj.CoreCompileInputs.cache
+C:\Users\danya\source\repos\DiagramConsructorV2\DiagramConsructorV2\obj\Debug\DiagramConsructorV2.exe
+C:\Users\danya\source\repos\DiagramConsructorV2\DiagramConsructorV2\obj\Debug\DiagramConsructorV2.pdb
+C:\Users\danya\source\repos\DiagramConsructorV2\DiagramConsructorV2\obj\Debug\DiagramConsructorV2.csproj.ResolveComReference.cache
+C:\Users\danya\source\repos\DiagramConsructorV2\DiagramConsructorV2\bin\Debug\Help\Shapes.vssx
