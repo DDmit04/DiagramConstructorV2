@@ -1,12 +1,10 @@
-﻿using System;
+﻿using DiagramConsructorV2.src.enumerated;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace DiagramConstructor
+namespace DiagramConsructorV2.src.data
 {
-    class Node
+    public class Node
     {
         public ShapeForm shapeForm { get; set; } = ShapeForm.PROCESS;
         public String nodeText { get; set; } = "";

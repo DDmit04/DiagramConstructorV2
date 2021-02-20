@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace DiagramConstructor
+namespace DiagramConsructorV2.src.data
 {
-    class Method
+    public class Method
     {
         public String methodSignature { get; set; }
         public List<Node> methodNodes { get; }

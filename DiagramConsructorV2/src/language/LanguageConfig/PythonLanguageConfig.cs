@@ -1,9 +1,8 @@
-﻿
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
-namespace DiagramConstructor.Config
+namespace DiagramConstructorV2.src.lang.langConfig
 {
-    class PytonLanguageConfig : LanguageConfig
+    public class PytonLanguageConfig : LanguageConfig
     {
 
         public PytonLanguageConfig()

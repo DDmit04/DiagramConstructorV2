@@ -1,10 +1,11 @@
-﻿using DiagramConstructor.Config;
+﻿using DiagramConsructorV2.src.data;
+using DiagramConstructorV2.src.lang.langConfig;
 using System;
 using System.Collections.Generic;
 
-namespace DiagramConstructor
+namespace DiagramConsructorV2.src.actor.codeParser
 {
-    abstract class CodeParser
+    public abstract class CodeParser
     {
         protected List<Node> methodNodes = new List<Node>();
         protected LanguageConfig languageConfig;
@@ -22,7 +23,7 @@ namespace DiagramConstructor
         public abstract List<Method> ParseCode(string codeToParse);
 
         /// <summary>
-        /// Check is code not started with (if | for | while | ...)
+        /// Check is code not started with (if | for | while | etc...)
         /// </summary>
         /// <param name="line">code to check</param>
         /// <returns>bool</returns>

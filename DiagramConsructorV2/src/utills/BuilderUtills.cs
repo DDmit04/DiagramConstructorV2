@@ -1,9 +1,11 @@
-﻿using Microsoft.Office.Interop.Visio;
+﻿using DiagramConsructorV2.src.data;
+using DiagramConsructorV2.src.enumerated;
+using Microsoft.Office.Interop.Visio;
 using System;
 
-namespace DiagramConstructor.actor
+namespace DiagramConsructorV2.src.utills
 {
-    class BuilderUtills
+    public class BuilderUtills
     {
 
         /// <summary>

@@ -1,35 +1,55 @@
-﻿using DiagramConstructor.Config;
-using DiagramConstructor.utills;
-using System;
+﻿using DiagramConsructorV2.src.data;
+using DiagramConsructorV2.src.enumerated;
+using DiagramConsructorV2.src.utills;
+using DiagramConstructorV2.src.lang.langConfig;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace DiagramConstructor.actor.codeParser
+namespace DiagramConsructorV2.src.actor.codeParser
 {
-    class PytonCodeParser : CodeParser
+    public class PytonCodeParser : CodeParser
     {
-        public PytonCodeParser(LanguageConfig languageConfig) : base(languageConfig)
-        {
-        }
+        public PytonCodeParser() : base(new PytonLanguageConfig()) { }
 
         public override List<Method> ParseCode(string codeToParse)
         {
             List<Method> allMethods = new List<Method>();
-            if (getNextCodeBlock(-1, codeToParse) != codeToParse)
+            if (getNextCodeBlock(0, codeToParse) != codeToParse)
             {
                 while (codeToParse != "")
                 {
                     string methodHeadLine = CodeUtils.getNextLine(codeToParse);
-                    string formattedMethodHeadLine = formatLine(methodHeadLine);
-                    codeToParse = CodeUtils.replaceFirst(codeToParse, methodHeadLine, "");
-                    string methodCode = getNextCodeBlock(0, codeToParse);
+                    while (methodHeadLine == "\n")
+                    {
+                        methodHeadLine = CodeUtils.getNextLine(codeToParse);
+                        codeToParse = CodeUtils.replaceFirst(codeToParse, methodHeadLine, "");
+                    }
+                    string methodCode;
+                    if (methodHeadLine.IndexOf(languageConfig.methodHead) == -1
+                        && codeToParse.IndexOf(languageConfig.methodHead) == -1)
+                    {
+                        methodHeadLine = "main";
+                        methodCode = getNextCodeBlock(-1, codeToParse);
+                        int nextMethodIndex = methodHeadLine.IndexOf(languageConfig.methodHead);
+                        if (nextMethodIndex == -1)
+                        {
+                            methodCode = methodCode.Substring(0, nextMethodIndex);
+                        }
+                    }
+                    else
+                    {
+                        methodHeadLine = formatLine(methodHeadLine);
+                        codeToParse = CodeUtils.replaceFirst(codeToParse, methodHeadLine, "");
+                        methodCode = getNextCodeBlock(0, codeToParse);
+                    }
                     codeToParse = CodeUtils.replaceFirst(codeToParse, methodCode, "");
 
                     List<Node> methodNodes = parse(1, methodCode);
-                    Method newMethod = new Method(formattedMethodHeadLine, methodNodes);
+                    Method newMethod = new Method(methodHeadLine, methodNodes);
                     allMethods.Add(newMethod);
                 }
-            } else
+            } 
+            else
             {
                 List<Node> methodNodes = parse(0, codeToParse);
                 Method newMethod = new Method("main", methodNodes);
@@ -38,15 +58,13 @@ namespace DiagramConstructor.actor.codeParser
             return allMethods;
         }
 
-        private String getNextCodeBlock(int currentLevel, String code)
+        private string getNextCodeBlock(int currentLevel, string code)
         {
-            string nextLine = "";
             string resultBlock = "";
             int level = -1;
+            string nextLine = CodeUtils.getNextLine(code);
             while (code != "")
             {
-                nextLine = CodeUtils.getNextLine(code);
-                level = Regex.Matches(nextLine, "\t").Count;
                 if (level == -1 || level > currentLevel)
                 {
                     resultBlock += nextLine;
@@ -56,6 +74,8 @@ namespace DiagramConstructor.actor.codeParser
                 {
                     break;
                 }
+                nextLine = CodeUtils.getNextLine(code);
+                level = Regex.Matches(nextLine, "\t").Count;
             }
 
             return resultBlock;
@@ -64,10 +84,9 @@ namespace DiagramConstructor.actor.codeParser
         private List<Node> parse(int currentLevel, string codeToParse)
         {
             List<Node> resNodes = new List<Node>();
-            string nextLine = "";
             while (codeToParse != "")
             {
-                nextLine = CodeUtils.getNextLine(codeToParse);
+                string nextLine = CodeUtils.getNextLine(codeToParse);
                 codeToParse = CodeUtils.replaceFirst(codeToParse, nextLine, "");
                 nextLine = formatLineWithCurrentLevel(currentLevel, nextLine);
 

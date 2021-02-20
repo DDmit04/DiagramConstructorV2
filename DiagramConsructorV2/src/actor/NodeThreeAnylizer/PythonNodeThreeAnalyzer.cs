@@ -1,17 +1,13 @@
 ﻿using DiagramConsructorV2.src.actor.codeFormatter;
-using DiagramConstructor.Config;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using DiagramConsructorV2.src.data;
+using DiagramConsructorV2.src.enumerated;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
-namespace DiagramConstructor.actor.codeAnalyzer
+namespace DiagramConstructorV2.src.nodeThreeAnylizer
 {
-    class PytonCodeAnalyzer : CodeAnalyzer
+    public class PytonNodeThreeAnalyzer : NodeThreeAnalyzer
     {
-        public PytonCodeAnalyzer(CodeFormatter codeFormatter) : base(codeFormatter)
+        public PytonNodeThreeAnalyzer() : base(new PythonCodeFormatter())
         {
         }
 
@@ -34,8 +30,7 @@ namespace DiagramConstructor.actor.codeAnalyzer
 
         protected override string formatNodeText(Node node)
         {
-            string nodeCode = node.nodeText;
-            nodeCode = base.formatNodeText(node);
+            string nodeCode = base.formatNodeText(node);
             nodeCode = nodeCode.Replace("\n", "").Replace("{", "").Replace("}", "");
             return nodeCode;
         }

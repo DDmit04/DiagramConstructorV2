@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DiagramConstructor {
+﻿namespace DiagramConsructorV2.src.enumerated
+{
     enum TestRunType
     {
         
-        PRODACTION, FULL_TEST, SINGLE_TEST
+        PROD, FULL_TEST, SINGLE_TEST
 
     }
 }

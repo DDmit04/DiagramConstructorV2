@@ -8,12 +8,13 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>DiagramConsructorV2</RootNamespace>
     <AssemblyName>DiagramConsructorV2</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -36,6 +37,10 @@
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>diagramConstructorIcon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>
+    </StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Office.Interop.Visio, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
@@ -62,25 +67,25 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="src\actor\codeAnalyzer\CodeAnalyzer.cs" />
-    <Compile Include="src\actor\codeAnalyzer\CppCodeAnalyzer.cs" />
-    <Compile Include="src\actor\codeAnalyzer\PytonCodeAnalyzer.cs" />
+    <Compile Include="src\actor\NodeThreeAnylizer\NodeThreeAnalyzer.cs" />
+    <Compile Include="src\actor\NodeThreeAnylizer\CppNodeThreeAnalyzer.cs" />
+    <Compile Include="src\actor\NodeThreeAnylizer\PythonNodeThreeAnalyzer.cs" />
     <Compile Include="src\actor\codeFormatter\CodeFormatter.cs" />
     <Compile Include="src\actor\codeFormatter\CppCodeFormatter.cs" />
-    <Compile Include="src\actor\codeFormatter\PytonCodeFormatter.cs" />
+    <Compile Include="src\actor\codeFormatter\PythonCodeFormatter.cs" />
     <Compile Include="src\actor\codeParser\CodeParser.cs" />
     <Compile Include="src\actor\codeParser\CppCodeParser.cs" />
-    <Compile Include="src\actor\codeParser\PytonCodeParser.cs" />
+    <Compile Include="src\actor\codeParser\PythonCodeParser.cs" />
     <Compile Include="src\actor\DiagramBuilder.cs" />
     <Compile Include="src\actor\VisioManipulator.cs" />
-    <Compile Include="src\Config\Configuration.cs" />
-    <Compile Include="src\actor\LanguageConfiguration\CppLanguageConfig.cs" />
-    <Compile Include="src\actor\LanguageConfiguration\LanguageConfig.cs" />
-    <Compile Include="src\actor\LanguageConfiguration\PytonLanguageConfig.cs" />
-    <Compile Include="src\Config\ExceptionLogger.cs" />
+    <Compile Include="src\config\Configuration.cs" />
+    <Compile Include="src\language\LanguageConfig\CppLanguageConfig.cs" />
+    <Compile Include="src\language\LanguageConfig\LanguageConfig.cs" />
+    <Compile Include="src\language\LanguageConfig\PythonLanguageConfig.cs" />
+    <Compile Include="src\excaptions\ExceptionLogger.cs" />
     <Compile Include="src\data\Method.cs" />
     <Compile Include="src\data\Node.cs" />
-    <Compile Include="src\data\shapeWrapper.cs" />
+    <Compile Include="src\data\ShapeWrapper.cs" />
     <Compile Include="src\enum\ShapeConnectionType.cs" />
     <Compile Include="src\enum\ShapeForm.cs" />
     <Compile Include="src\enum\TestRunType.cs" />
@@ -95,9 +100,9 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\languages\CppLanguage.cs" />
-    <Compile Include="src\languages\Language.cs" />
-    <Compile Include="src\languages\PytonLanguage.cs" />
+    <Compile Include="src\language\CppLanguage.cs" />
+    <Compile Include="src\language\Language.cs" />
+    <Compile Include="src\language\PytonLanguage.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -128,6 +133,7 @@
     <EmbeddedResource Include="Help\Shapes.vssx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

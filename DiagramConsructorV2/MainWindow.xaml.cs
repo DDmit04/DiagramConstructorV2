@@ -5,11 +5,11 @@ using System.Windows.Forms;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
-using DiagramConsructorV2.fileTypes;
 using DiagramConsructorV2.src;
-using DiagramConstructor;
-using System.Diagnostics;
-using DiagramConsructorV2.src.Config;
+using DiagramConsructorV2.src.lang;
+using DiagramConstructorV2.src.config;
+using System.Reflection;
+using DiagramConsructorV2.src.excaptions;
 
 namespace DiagramConsructorV2
 {
@@ -19,15 +19,34 @@ namespace DiagramConsructorV2
     public partial class MainWindow : Window
     {
 
-        private List<Language> allLangs = new List<Language>(){ new PytonLanguage(), new CppLanguage() };
+        private readonly List<Language> allLangs = new List<Language>();
         private Language choosenLang = null;
         public MainWindow()
         {
-            choosenLang = allLangs[0];
             InitializeComponent();
             closeAfterBuildCheckBox.IsEnabled = false;
             searchSaveFilderTextBox.Text = Configuration.defaultFilePath;
+            LoadLanguages();
+            choosenLang = allLangs[0];
             chooseLangComboBox.ItemsSource = allLangs.Select(lang => lang.displayName);
+        }
+
+        private void LoadLanguages()
+        {
+            IEnumerable<Type> languageSubclassTypes = Assembly.GetAssembly(typeof(Language)).GetTypes()
+                .Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(Language)));
+            foreach (Type languageSubclassType in languageSubclassTypes)
+            {
+                try
+                {
+                    allLangs.Add((Language)Activator.CreateInstance(languageSubclassType));
+                }
+                catch (Exception exception)
+                {
+                    string logFilepath = ExceptionLogger.logWarning(exception, "no code", $"Language subclass with name {languageSubclassType.FullName} hase no default constructor!");
+                    showWarningMessage("Неполадка при инициализации программы!", $"Возникла ошибка при загрузке конфигурации языка {languageSubclassType.Name}! Вы можете продолжать пользоваться программой, но данный язык будет недоступен.", logFilepath);
+                }
+            }
         }
 
         private void filepathTextBox_MouseDown(object sender, RoutedEventArgs e)
@@ -143,19 +162,12 @@ namespace DiagramConsructorV2
                 string filePathToSave = searchSaveFilderTextBox.Text;
                 string codeToBuildDiagram = codeContentTextBox.Text;
                 string finalDiagramFilePath = starter.createDiagram(codeToBuildDiagram, filePathToSave, (bool)closeAfterBuildCheckBox.IsChecked);
-                System.Windows.MessageBox.Show($"Путь до диаграммы - {finalDiagramFilePath}", "Диаграмма сохранена!", MessageBoxButton.OK, MessageBoxImage.Information);
+                showInfoMessage($"Путь до диаграммы - {finalDiagramFilePath}", "Диаграмма сохранена!");
             }
             catch (Exception exception)
             {
-                string logFilepath = ExceptionLogger.logException(exception);
-                if (logFilepath != "")
-                {
-                    showErrorMessage("Не удалось создать диаграмму", $"Ошибка построения диаграммы! Файл с логами ошибки - {logFilepath}");
-                }
-                else
-                {
-                    showErrorMessage("Не удалось создать диаграмму", "Ошибка построения диаграммы! В процессе записи логов возникла ошибка!");
-                }
+                string logFilepath = ExceptionLogger.logException(exception, codeContentTextBox.Text);
+                showErrorMessage("Не удалось создать диаграмму", $"Ошибка построения диаграммы!", logFilepath);
             }
         }
 
@@ -168,9 +180,27 @@ namespace DiagramConsructorV2
             }
         }
 
-        private void showErrorMessage(string title, string body)
+        private void showInfoMessage(string title, string body)
         {
+            System.Windows.MessageBox.Show(body, title, MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void showErrorMessage(string title, string body, string logFilepath = "")
+        {
+            if (logFilepath != "")
+            {
+                body += $" Файл с логами ошибки - {logFilepath}";
+            }
             System.Windows.MessageBox.Show(body, title, MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        private void showWarningMessage(string title, string body, string logFilepath = "")
+        {
+            if (logFilepath != "")
+            {
+                body += $" Файл с логами ошибки - {logFilepath}";
+            }
+            System.Windows.MessageBox.Show(body, title, MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 }

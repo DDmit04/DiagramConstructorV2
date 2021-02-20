@@ -1,12 +1,13 @@
 ﻿using DiagramConsructorV2.src.actor.codeFormatter;
-using System.Collections.Generic;
+using DiagramConsructorV2.src.data;
+using DiagramConsructorV2.src.enumerated;
 using System.Text.RegularExpressions;
 
-namespace DiagramConstructor.actor.codeAnalyzer
+namespace DiagramConstructorV2.src.nodeThreeAnylizer
 {
-    class CppCodeAnalyzer : CodeAnalyzer
+    public class CppNodeThreeAnalyzer : NodeThreeAnalyzer
     {
-        public CppCodeAnalyzer(CodeFormatter codeFormatter) : base(codeFormatter){}
+        public CppNodeThreeAnalyzer() : base(new CppCodeFormatter()){}
 
         protected override bool isUnimportantNode(Node node)
         {

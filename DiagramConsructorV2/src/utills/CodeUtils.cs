@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
-namespace DiagramConstructor.utills
+namespace DiagramConsructorV2.src.utills
 {
-    class CodeUtils
+    public class CodeUtils
     {
 
         /// <summary>
@@ -35,7 +35,6 @@ namespace DiagramConstructor.utills
             int lineBreakIndex = code.IndexOf('\n');
             if (lineBreakIndex != -1)
             {
-
                 return code.Substring(0, lineBreakIndex + 1);
             }
             else

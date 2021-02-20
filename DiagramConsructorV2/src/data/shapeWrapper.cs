@@ -1,13 +1,9 @@
-﻿using Microsoft.Office.Interop.Visio;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using DiagramConsructorV2.src.enumerated;
+using Microsoft.Office.Interop.Visio;
 
-namespace DiagramConstructor
+namespace DiagramConsructorV2.src.data
 {
-    class ShapeWrapper
+    public class ShapeWrapper
     {
         public ShapeWrapper(Shape shape, ShapeForm shapeType)
         {

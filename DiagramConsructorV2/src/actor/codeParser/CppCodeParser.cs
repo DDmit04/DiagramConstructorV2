@@ -1,35 +1,32 @@
-﻿using DiagramConstructor.Config;
-using DiagramConstructor.utills;
-using System;
+﻿using DiagramConsructorV2.src.data;
+using DiagramConsructorV2.src.enumerated;
+using DiagramConsructorV2.src.utills;
+using DiagramConstructorV2.src.lang.langConfig;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace DiagramConstructor.actor.codeParser
+namespace DiagramConsructorV2.src.actor.codeParser
 {
-    class CppCodeParser : CodeParser
+    public class CppCodeParser : CodeParser
     {
-        public CppCodeParser(LanguageConfig languageConfig) : base(languageConfig) {}
+        public CppCodeParser() : base(new CppLanguageConfig()) {}
 
         /// <summary>
         /// Class main method convert code from string to AST
         /// </summary>
         /// <param name="codeToParse">code as string to convert</param>
         /// <returns>AST (list of methods)</returns>
-        public override List<Method> ParseCode(String codeToParse)
+        public override List<Method> ParseCode(string codeToParse)
         {
             List<Method> methods = new List<Method>();
             List<Node> globalVars = new List<Node>();
-            String nextMethodCode = "";
-            int methodCodeBegin = 0;
-            String methodBlock = "";
-            String methodSignature = "";
             Method newMethod = new Method("no method!", new List<Node>());
             while (!codeIsEmptyMarcks(codeToParse))
             {
-                nextMethodCode = getNextCodeBlock(codeToParse);
-                methodCodeBegin = nextMethodCode.IndexOf('{');
-                methodBlock = nextMethodCode.Substring(methodCodeBegin);
-                methodSignature = nextMethodCode.Substring(0, methodCodeBegin);
+                string nextMethodCode = getNextCodeBlock(codeToParse);
+                int methodCodeBegin = nextMethodCode.IndexOf('{');
+                string methodBlock = nextMethodCode.Substring(methodCodeBegin);
+                string methodSignature = nextMethodCode.Substring(0, methodCodeBegin);
                 codeToParse = codeToParse.Replace(nextMethodCode, "");
                 methodBlock = methodBlock.Remove(methodBlock.IndexOf('{'), 1);
                 methodBlock = methodBlock.Remove(methodBlock.LastIndexOf('}'), 1);
@@ -60,7 +57,7 @@ namespace DiagramConstructor.actor.codeParser
         /// </summary>
         /// <param name="methodName">method signature to search global varibles</param>
         /// <returns>list of nodes - PROCESS blocks</returns>
-        public List<Node> extractGlobalVarsFromMethodSignature(String methodName)
+        public List<Node> extractGlobalVarsFromMethodSignature(string methodName)
         {
             List<Node> extractedNodes = new List<Node>();
             Node newNode;
@@ -79,31 +76,31 @@ namespace DiagramConstructor.actor.codeParser
         }
 
         /// <summary>
-        /// Returns code block extracted from string (example - while(a > b){a--; b++} cout<<a; cout<<b; --> while(a > b){a--; b++})
+        /// Returns code block (code detween first {}) extracted from string
         /// </summary>
         /// <param name="code">code to search blocks</param>
         /// <returns>string from begin to index of closing } (count of { and } in result string is equal)</returns>
-        private String getNextCodeBlock(String code)
+        private string getNextCodeBlock(string code)
         {
             if (code[0].Equals('{') && code[code.Length - 1].Equals('}'))
             {
                 code = code.Remove(0, 1);
                 code = code.Remove(code.Length - 1, 1);
             }
-            String codeBlock = "";
-            int openMarckCount = 0;
-            int closeMarckCount = 0;
+            string codeBlock = "";
+            int openMarksCount = 0;
+            int closeMarksCount = 0;
             for (int endIndex = 0; endIndex < code.Length; endIndex++)
             {
                 if (code[endIndex].Equals('}'))
                 {
-                    openMarckCount++;
+                    openMarksCount++;
                 }
                 if (code[endIndex].Equals('{'))
                 {
-                    closeMarckCount++;
+                    closeMarksCount++;
                 }
-                if (openMarckCount == closeMarckCount && (openMarckCount != 0 && closeMarckCount != 0))
+                if (openMarksCount == closeMarksCount && openMarksCount != 0 && closeMarksCount != 0)
                 {
                     codeBlock = code.Substring(0, endIndex + 1);
                     break;
@@ -121,10 +118,9 @@ namespace DiagramConstructor.actor.codeParser
         /// </summary>
         /// <param name="nextCodeBlock">string to extract operator text</param>
         /// <returns>operator text</returns>
-        String extractOperatorTextFromCodeBlock(string nextCodeBlock)
+        string extractOperatorTextFromCodeBlock(string nextCodeBlock)
         {
-            int nextLineDivider = 0;
-            nextLineDivider = nextCodeBlock.IndexOf('{');
+            int nextLineDivider = nextCodeBlock.IndexOf('{');
             if (nextLineDivider == -1)
             {
                 nextLineDivider = nextCodeBlock.Length;
@@ -139,29 +135,26 @@ namespace DiagramConstructor.actor.codeParser
         /// </summary>
         /// <param name="nodeCode">code to convert</param>
         /// <returns>list of code ASTs</returns>
-        private List<Node> parseNode(String nodeCode)
+        private List<Node> parseNode(string nodeCode)
         {
             List<Node> resultNodes = new List<Node>();
-            int operatorAndCodeDivider = 0;
-            String nextCodeBlock = "";
-            String nodeCodeLine = "";
             while (!codeIsEmptyMarcks(nodeCode))
             {
                 Node newNode = new Node();
-                nextCodeBlock = getNextCodeBlock(nodeCode);
-                operatorAndCodeDivider = nextCodeBlock.IndexOf('{');
+                string nextCodeBlock = getNextCodeBlock(nodeCode);
+                int operatorAndCodeDivider = nextCodeBlock.IndexOf('{');
                 if (languageConfig.isLineStartWithIf(nextCodeBlock))
                 {
                     newNode.shapeForm = ShapeForm.IF;
                     newNode.nodeText = extractOperatorTextFromCodeBlock(nextCodeBlock);
                     newNode.childIfNodes = parseNode(nextCodeBlock.Substring(operatorAndCodeDivider));
 
-                    String localCode = CodeUtils.replaceFirst(nodeCode, nextCodeBlock, "");
+                    string localCode = CodeUtils.replaceFirst(nodeCode, nextCodeBlock, "");
 
                     if (!codeIsEmptyMarcks(localCode))
                     {
                         //TO DO refactor this
-                        String onotherNextBlock = getNextCodeBlock(localCode);
+                        string onotherNextBlock = getNextCodeBlock(localCode);
                         if (languageConfig.isLineStartWithElseIf(onotherNextBlock))
                         {
                             Regex elseifRegex = new Regex(@"(elseif\(\S+\){\S+;})+(else{\S+;})*");
@@ -199,9 +192,9 @@ namespace DiagramConstructor.actor.codeParser
                 {
                     //find first 'while' after 'do{}'
                     int whileOperatorTextEndIndex = nodeCode.Substring(nextCodeBlock.Length).IndexOf(';');
-                    String whileOperatorText = nodeCode.Substring(nextCodeBlock.Length, whileOperatorTextEndIndex);
+                    string whileOperatorText = nodeCode.Substring(nextCodeBlock.Length, whileOperatorTextEndIndex);
 
-                    //get only 'while' statement which beelong to 'do-while'
+                    //get only 'while' statement which belong to 'do-while'
                     Match match = languageConfig.whileStatementRegex.Match(whileOperatorText);
                     whileOperatorText = match.Value;
 
@@ -217,12 +210,12 @@ namespace DiagramConstructor.actor.codeParser
                 }
                 else
                 {
-                    String nextCodeBlockCopy = nextCodeBlock;
+                    string nextCodeBlockCopy = nextCodeBlock;
                     while (!codeIsEmptyMarcks(nextCodeBlockCopy))
                     {
                         newNode = new Node();
                         operatorAndCodeDivider = nextCodeBlockCopy.IndexOf(';');
-                        nodeCodeLine = nextCodeBlockCopy.Substring(0, operatorAndCodeDivider + 1);
+                        string nodeCodeLine = nextCodeBlockCopy.Substring(0, operatorAndCodeDivider + 1);
                         if (!lineIsSimple(nodeCodeLine))
                         {
                             break;
@@ -259,7 +252,7 @@ namespace DiagramConstructor.actor.codeParser
         /// </summary>
         /// <param name="text">text to check</param>
         /// <returns>Is code contains only { and } chars</returns>
-        private bool codeIsEmptyMarcks(String text)
+        private bool codeIsEmptyMarcks(string text)
         {
             Regex regex = new Regex(@"({;*})");
             return regex.IsMatch(text) || text.Equals("");

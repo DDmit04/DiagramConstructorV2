@@ -1,9 +1,8 @@
-﻿using System;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
-namespace DiagramConstructor.Config
+namespace DiagramConstructorV2.src.lang.langConfig
 {
-    class CppLanguageConfig : LanguageConfig
+    public class CppLanguageConfig : LanguageConfig
     {
 
         protected Regex unimportantOutputRegex = new Regex(@"\'\S*\'\,*");
@@ -11,8 +10,8 @@ namespace DiagramConstructor.Config
         protected Regex methodReturnCallRegex = new Regex(@"(\S*)(\=)(\S*)\((\S*)\)");
         protected Regex methodCallOnObjectRegex = new Regex(@"\S*\=\S*\.\S*\(\S*\)");
 
-        protected String inputV2Statement = "cout«";
-        protected String outputV2Statement = "cin»";
+        protected string inputV2Statement = "cout«";
+        protected string outputV2Statement = "cin»";
 
         public CppLanguageConfig()
         {

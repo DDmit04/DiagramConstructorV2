@@ -1,6 +1,7 @@
-﻿using System;
+﻿using DiagramConsructorV2.src.enumerated;
+using System;
 
-namespace DiagramConstructor
+namespace DiagramConstructorV2.src.config
 {
     class Configuration
     {
@@ -22,10 +23,10 @@ namespace DiagramConstructor
         /// <summary>
         /// Use test code to run program
         /// </summary>
-        public static TestRunType testRun = TestRunType.PRODACTION;
+        public static TestRunType testRun = TestRunType.PROD;
 
         public static string shapesMastersFilePath = AppDomain.CurrentDomain.BaseDirectory + @"\Help\Shapes.vssx";
-        public static string diagramFileExtantion = ".vsdx";
+        public static string diagramFileExtention = ".vsdx";
 
 
     }

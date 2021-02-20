@@ -1,29 +1,25 @@
-﻿using DiagramConstructor.utills;
+﻿using DiagramConsructorV2.src.enumerated;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
-namespace DiagramConstructor.Config
+namespace DiagramConstructorV2.src.lang.langConfig
 {
-    abstract class LanguageConfig
+    public abstract class LanguageConfig
     {
 
-        public String ifStatement;
-        public String elseStatement;
-        public String elseCloseStatement;
-        public String elseIfStatement;
-        public String forStatement;
-        public String whileStatement;
-        public String doWhileStatement;
-        public String inputStatement;
-        public String outputStatement;
-        public String methodHead;
+        public string ifStatement;
+        public string elseStatement;
+        public string elseCloseStatement;
+        public string elseIfStatement;
+        public string forStatement;
+        public string whileStatement;
+        public string doWhileStatement;
+        public string inputStatement;
+        public string outputStatement;
+        public string methodHead;
 
-        public String inputReplacement = "Ввод ";
-        public String outputReplacement = "Вывод ";
+        public string inputReplacement = "Ввод ";
+        public string outputReplacement = "Вывод ";
 
         public Regex ifStatementRegex;
         public Regex forStatementRegex;

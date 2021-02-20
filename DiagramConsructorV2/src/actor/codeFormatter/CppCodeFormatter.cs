@@ -1,59 +1,56 @@
-﻿using DiagramConstructor.Config;
-using DiagramConstructor.utills;
+﻿using DiagramConstructorV2.src.lang.langConfig;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace DiagramConsructorV2.src.actor.codeFormatter
 {
-    class CppCodeFormatter : CodeFormatter
+    public class CppCodeFormatter : CodeFormatter
     {
-
         protected string inputV2Statement = "cout«";
         protected string outputV2Statement = "cin»";
-        public CppCodeFormatter(LanguageConfig languageConfig) : base(languageConfig) { }
+        public CppCodeFormatter() : base(new CppLanguageConfig())
+        {
+            //namespaces 
+            replaceRegexps.Add(new Regex(@"using\s*namespace\s*\w*\;"));
+            //prepocessor
+            replaceRegexps.Add(new Regex(@"#\w*\s*[<|']\w*\.*\w?[\>|']"));
+            //struct
+            replaceRegexps.Add(new Regex(@"(struct)\s*\S*\s*\{\s*\S*\s*(\};)"));
+            //comments
+            replaceRegexps.Add(new Regex(@"\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$"));
+            //varible Declaration
+            replaceRegexps.Add(new Regex(@"^(const)*\s*(void|char|int|double|bool|long|short|string|String|float)+\s*\**\s*\S*\s*;"));
+            //arr And Struct Declaration With Init
+            replaceRegexps.Add(new Regex("^((const)*(\\s*\\S*\\s*)\\s*\\**\\s*)(\\s*\\S*\\s*)(\\[\\d*\\])*\\s*= +\\s*{({*((\\d*|\\w*|'|\"),*\\s*)*}*\\,*)*}\\s*;"));
+            //arr Declaration
+            replaceRegexps.Add(new Regex(@"^((const)*(\s*\S*\s*)\s*\**\s*)(\s*\S*\s*)(\[\d*\])+\s*;"));
+            //constructior Call
+            replaceRegexps.Add(new Regex(@"^(const)*(\s*[\d*|\w*]\s*)\s*\**\s*(\s*\S*\s*)(\(\s*\S*\s*\))+;"));
+            //service Words
+            replaceRegexps.Add(new Regex(@"(const)*(return|void|int|char|double|long|short|string|String|float)"));
+            //special Symbols
+            replaceRegexps.Add(new Regex(@"\r|\n|\t"));
+        }
+
 
         public override string prepareCodeBeforeParse(string code)
         {
-            Regex namespacesRegex = new Regex(@"using\s*namespace\s*\w*\;");
-            Regex prepocessorRegex = new Regex(@"#\w*\s*[<|']\w*\.*\w?[\>|']");
-            Regex structRegex = new Regex(@"(struct)\s*\S*\s*\{\s*\S*\s*(\};)");
-            Regex commentsRegex = new Regex(@"\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$");
-            Regex varibleDeclarationRegex = new Regex(@"^(const)*\s*(void|char|int|double|bool|long|short|string|String|float)+\s*\**\s*\S*\s*;");
-            Regex arrAndStructDeclarationWithInitRegex = new Regex("^((const)*(\\s*\\S*\\s*)\\s*\\**\\s*)(\\s*\\S*\\s*)(\\[\\d*\\])*\\s*= +\\s*{({*((\\d*|\\w*|'|\"),*\\s*)*}*\\,*)*}\\s*;");
-            Regex arrDeclarationRegex = new Regex(@"^((const)*(\s*\S*\s*)\s*\**\s*)(\s*\S*\s*)(\[\d*\])+\s*;");
-            Regex constructiorCallRegex = new Regex(@"^(const)*(\s*[\d*|\w*]\s*)\s*\**\s*(\s*\S*\s*)(\(\s*\S*\s*\))+;");
-            Regex servoceWordsRegex = new Regex(@"(const)*(return|void|int|char|double|long|short|string|String|float)");
-            Regex specialSymbolRegex = new Regex(@"\r|\n|\t");
-
-            code = namespacesRegex.Replace(code, "");
-            code = prepocessorRegex.Replace(code, "");
-            code = structRegex.Replace(code, "");
-            code = namespacesRegex.Replace(code, "");
-            code = commentsRegex.Replace(code, "");
-            code = varibleDeclarationRegex.Replace(code, "");
-            code = arrAndStructDeclarationWithInitRegex.Replace(code, "");
-            code = arrDeclarationRegex.Replace(code, "");
-            code = constructiorCallRegex.Replace(code, "");
-            code = servoceWordsRegex.Replace(code, "");
-            code = specialSymbolRegex.Replace(code, "");
-
+            code = code.Replace("\"", "'");
             code = code.Replace(" ", "");
             code = code.Replace("==", "=");
             code = code.Replace("->", ".");
             code = code.Replace("\"", "'");
             code = code.Replace("\\n", "'");
-
+            code = base.prepareCodeBeforeParse(code);
             return code;
         }
 
         public override string formatMethodHead(string codeLine)
         {
             Regex arraySizeRegexp = new Regex(@"(\[\d*\])*");
+            Regex classQualifierRegexp = new Regex(@".*::");
             codeLine = arraySizeRegexp.Replace(codeLine, "", 1);
+            codeLine = classQualifierRegexp.Replace(codeLine, "", 1);
             int methodArgsIndex = codeLine.IndexOf('(');
             if (methodArgsIndex != -1)
             {
@@ -63,7 +60,7 @@ namespace DiagramConsructorV2.src.actor.codeFormatter
             {
                 codeLine = clearMethodSignature(codeLine);
             }
-            return base.formatMethodHead(codeLine);
+            return codeLine;
         }
 
         public override string formatFor(string codeLine)
@@ -129,7 +126,7 @@ namespace DiagramConsructorV2.src.actor.codeFormatter
         }
 
         /// <summary>
-        /// Delete globar args from method signature
+        /// Delete global args from method signature
         /// </summary>
         /// <param name="methodName"></param>
         /// <returns></returns>

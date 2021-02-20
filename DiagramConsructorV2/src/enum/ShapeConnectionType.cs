@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DiagramConstructor
+﻿namespace DiagramConsructorV2.src.enumerated
 {
-    enum ShapeConnectionType
+    public enum ShapeConnectionType
     {
         FROM_LEFT_TO_TOP, 
         FROM_RIGHT_TO_TOP,

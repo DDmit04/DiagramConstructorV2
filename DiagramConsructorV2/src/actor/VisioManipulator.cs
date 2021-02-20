@@ -1,9 +1,13 @@
-﻿using Microsoft.Office.Interop.Visio;
+﻿using DiagramConsructorV2.src.data;
+using DiagramConsructorV2.src.enumerated;
+using DiagramConsructorV2.src.utills;
+using DiagramConstructorV2.src.config;
+using Microsoft.Office.Interop.Visio;
 using System;
 
-namespace DiagramConstructor.actor
+namespace DiagramConstructorV2.actor
 {
-    class VisioManipulator
+    public class VisioManipulator
     {
 
         private Application visioApp;
@@ -66,11 +70,11 @@ namespace DiagramConstructor.actor
         public string saveDiagramDocument(string diagramFilePath)
         {
             string currentDate = DateTime.Now.ToString("dd-mm-yyyy__HH_mm_ss_fff");
-            string resulrFilePath = diagramFilePath + @"\result " + currentDate + Configuration.diagramFileExtantion;
+            string resulrFilePath = diagramFilePath + @"\result " + currentDate + Configuration.diagramFileExtention;
             bool isTestRun = Configuration.testRun == TestRunType.FULL_TEST || Configuration.testRun == TestRunType.SINGLE_TEST;
             if (isTestRun)
             {
-                resulrFilePath = diagramFilePath + @"\result_test" + Configuration.diagramFileExtantion;
+                resulrFilePath = diagramFilePath + @"\result_test" + Configuration.diagramFileExtention;
             }
             visioApp.ActiveDocument.SaveAs(resulrFilePath);
             return resulrFilePath;

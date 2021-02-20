@@ -1,16 +1,17 @@
 ﻿using DiagramConsructorV2.src.actor.codeFormatter;
-using DiagramConstructor.Config;
+using DiagramConsructorV2.src.data;
+using DiagramConsructorV2.src.enumerated;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace DiagramConstructor.actor
+namespace DiagramConstructorV2.src.nodeThreeAnylizer
 {
-    abstract class CodeAnalyzer
+    public abstract class NodeThreeAnalyzer
     {
 
         protected CodeFormatter codeFormatter;
 
-        public CodeAnalyzer(CodeFormatter codeFormatter)
+        public NodeThreeAnalyzer(CodeFormatter codeFormatter)
         {
             this.codeFormatter = codeFormatter;
         }
@@ -25,8 +26,8 @@ namespace DiagramConstructor.actor
             foreach(Method method in methodsToAnylize)
             {
                 method.methodSignature = codeFormatter.formatMethodHead(method.methodSignature).Trim();
-                formatNodeTree(method.methodNodes);
                 compareNodes(method.methodNodes);
+                formatNodeTree(method.methodNodes);
             }
             return methodsToAnylize;
         }
@@ -75,15 +76,15 @@ namespace DiagramConstructor.actor
         {
             foreach (Node node in methodNodes)
             {
-                if (node.childIfNodes.Count != 0)
+                if (nodeBranchNeedAnylize(node.childIfNodes))
                 {
                     formatNodeTree(node.childIfNodes);
                 }
-                if (node.childElseNodes.Count != 0)
+                if (nodeBranchNeedAnylize(node.childElseNodes))
                 {
                     formatNodeTree(node.childElseNodes);
                 }
-                if (node.childNodes.Count != 0)
+                if (nodeBranchNeedAnylize(node.childNodes))
                 {
                     formatNodeTree(node.childNodes);
                 }
@@ -99,7 +100,7 @@ namespace DiagramConstructor.actor
         /// </summary>
         /// <param name="node">node to anylize</param>
         /// <returns>is console output just constant string</returns>
-        protected abstract bool isUnimportantNode(Node node);
+        protected virtual bool isUnimportantNode(Node node) { return false; }
 
         /// <summary>
         /// Check is node branch need to be anylized

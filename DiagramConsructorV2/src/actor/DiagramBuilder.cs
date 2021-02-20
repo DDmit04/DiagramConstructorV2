@@ -1,27 +1,25 @@
-﻿using DiagramConstructor.actor;
+﻿using DiagramConsructorV2.src.data;
+using DiagramConsructorV2.src.enumerated;
+using DiagramConsructorV2.src.utills;
 using System;
 using System.Collections.Generic;
 
-namespace DiagramConstructor
+namespace DiagramConstructorV2.actor
 {
-    class DiagramBuilder
+    public class DiagramBuilder
     {
+
+        private readonly VisioManipulator visioManipulator = new VisioManipulator();
+
         private ShapeWrapper globalLastDropedShape;
         private bool globalIsSameBranch = false;
 
         private double startX = 1.25;
-        private double coreX = 1.25;
-
         private double startY = 11;
+
+        private double coreX = 1.25;
         private double coreY = 11;
 
-        private VisioManipulator visioManipulator;
-
-        public DiagramBuilder()
-        {
-            this.visioManipulator = new VisioManipulator();
-            setDefaultValues();
-        }
 
         /// <summary>
         /// Turn class varibles to degfault
@@ -56,6 +54,7 @@ namespace DiagramConstructor
 
             foreach (Method method in allMethods)
             {
+                //??????
                 if (!method.methodSignature.Equals("main ()"))
                 {
                     visioManipulator.addTextField(method.methodSignature, coreX, coreY);
@@ -72,7 +71,7 @@ namespace DiagramConstructor
                 moveCordsToNewMethod();
             }
 
-            string diagramFilename = "";
+            string diagramFilename;
             if (closeAfterBuild)
             {
                 diagramFilename = visioManipulator.closeDiagramDocument(diagramFilepath);

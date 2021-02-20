@@ -1,22 +1,32 @@
-﻿using DiagramConstructor.Config;
-using DiagramConstructor.utills;
+﻿using DiagramConsructorV2.src.utills;
+using DiagramConstructorV2.src.lang.langConfig;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace DiagramConsructorV2.src.actor.codeFormatter
 {
-    abstract class CodeFormatter
+    public abstract class CodeFormatter
     {
         protected LanguageConfig languageConfig;
+        protected List<Regex> replaceRegexps = new List<Regex>();
 
         public CodeFormatter(LanguageConfig languageConfig)
         {
             this.languageConfig = languageConfig;
         }
 
-        public abstract string prepareCodeBeforeParse(string code);
+        public virtual string prepareCodeBeforeParse(string code)
+        {
+            foreach (var regexp in replaceRegexps)
+            {
+                code = regexp.Replace(code, "");
+            }
+            return code; 
+        }
 
         public virtual string formatMethodHead(string codeLine)
         {
+            codeLine = codeLine.Replace(languageConfig.methodHead, "");
             return codeLine;
         }
 
@@ -27,9 +37,9 @@ namespace DiagramConsructorV2.src.actor.codeFormatter
         /// <returns>formated line (without statement string)</returns>
         public virtual string formatFor(string codeLine)
         {
-            Match match = this.languageConfig.forStatementRegex.Match(codeLine);
+            Match match = languageConfig.forStatementRegex.Match(codeLine);
             codeLine = match.Value;
-            codeLine = CodeUtils.replaceFirst(codeLine, this.languageConfig.forStatement, "");
+            codeLine = CodeUtils.replaceFirst(codeLine, languageConfig.forStatement, "");
             return codeLine;
         }
 
@@ -40,9 +50,9 @@ namespace DiagramConsructorV2.src.actor.codeFormatter
         /// <returns>formated line (without statement string)</returns>
         public virtual string formatIf(string codeLine)
         {
-            Match match = this.languageConfig.ifStatementRegex.Match(codeLine);
+            Match match = languageConfig.ifStatementRegex.Match(codeLine);
             codeLine = match.Value;
-            codeLine = CodeUtils.replaceFirst(codeLine, this.languageConfig.ifStatement, "");
+            codeLine = CodeUtils.replaceFirst(codeLine, languageConfig.ifStatement, "");
             return codeLine;
         }
 
@@ -53,9 +63,9 @@ namespace DiagramConsructorV2.src.actor.codeFormatter
         /// <returns>formated line (without statement string)</returns>
         public virtual string formatWhile(string codeLine)
         {
-            Match match = this.languageConfig.whileStatementRegex.Match(codeLine);
+            Match match = languageConfig.whileStatementRegex.Match(codeLine);
             codeLine = match.Value;
-            codeLine = CodeUtils.replaceFirst(codeLine, this.languageConfig.whileStatement, "");
+            codeLine = CodeUtils.replaceFirst(codeLine, languageConfig.whileStatement, "");
             return codeLine;
         }
 
@@ -66,8 +76,8 @@ namespace DiagramConsructorV2.src.actor.codeFormatter
         /// <returns>formated line (without statement string)</returns>
         public virtual string formatInOutPut(string codeLine)
         {
-            codeLine = codeLine.Replace(this.languageConfig.inputStatement, this.languageConfig.inputReplacement);
-            codeLine = codeLine.Replace(this.languageConfig.outputStatement, this.languageConfig.outputReplacement);
+            codeLine = codeLine.Replace(languageConfig.inputStatement, languageConfig.inputReplacement);
+            codeLine = codeLine.Replace(languageConfig.outputStatement, languageConfig.outputReplacement);
             return codeLine;
         }
     }
