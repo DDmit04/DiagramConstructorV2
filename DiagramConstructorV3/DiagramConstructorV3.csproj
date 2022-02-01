@@ -91,6 +91,7 @@
     <Compile Include="src\app\parser\parseConfig\DefaultParseConfig.cs" />
     <Compile Include="src\app\parser\parseConfig\ParseConfig.cs" />
     <Compile Include="src\app\parser\ParseRule.cs" />
+    <Compile Include="src\app\threeController\structureController\config\ThreeStructureControllerConfig.cs" />
     <Compile Include="src\app\tokenFilter\StrictEditTokensFilter.cs" />
     <Compile Include="src\app\tokenPattern\boundaryPatterns\TokensBlockPattern.cs" />
     <Compile Include="src\app\tokenPattern\boundaryPatterns\StartEndTokensPattern.cs" />

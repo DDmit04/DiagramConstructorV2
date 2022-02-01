@@ -3,14 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using DiagramConstructorV3.app.builder.data;
+using DiagramConstructorV3.app.exceptions;
 using DiagramConstructorV3.app.parser.data;
+using DiagramConstructorV3.app.threeController.structureController.config;
 using DiagramConstructorV3.app.tokenizer.data;
 
 namespace DiagramConstructorV3.app.threeController.structureController
 {
     public class ThreeStructureController
     {
-        protected readonly List<Predicate<Node>> UnnecessaryNodesRules = new List<Predicate<Node>>(); 
+        protected ThreeStructureControllerConfig ThreeStructureControllerConfig;
+        protected readonly List<Predicate<Node>> UnnecessaryNodesRules = new List<Predicate<Node>>();
+
+        public ThreeStructureController(ThreeStructureControllerConfig threeStructureControllerConfig)
+        {
+            ThreeStructureControllerConfig = threeStructureControllerConfig;
+        }
+
         public List<Method> OptimizeStructure(List<Method> methodsToAnalyze)
         {
             foreach(var method in methodsToAnalyze)
@@ -25,8 +34,8 @@ namespace DiagramConstructorV3.app.threeController.structureController
 
         protected void AddBeginEndNodes(List<Node> nodes)
         {
-            var beginNode = new Node(NodeType.BEGIN, "Начало");
-            var endNode = new Node(NodeType.END, "Конец");
+            var beginNode = new Node(NodeType.BEGIN, ThreeStructureControllerConfig.BeginNodeText);
+            var endNode = new Node(NodeType.END, ThreeStructureControllerConfig.EndNodeText);
             nodes.Insert(0, beginNode);
             nodes.Add(endNode);
         }
@@ -57,8 +66,7 @@ namespace DiagramConstructorV3.app.threeController.structureController
                     }
                     else
                     {
-                        //TODO
-                        throw new Exception();
+                        throw new ParseException(prevNode.NodeTokens, 0, NodeType.ELSE_IF);
                     }
                     index--;
                     prevNode = nodes[index - 1];
@@ -139,30 +147,30 @@ namespace DiagramConstructorV3.app.threeController.structureController
             var bothNodesTextLength = firstNode.NodeText.Length + secNode.NodeText.Length;
             var bothNodesLineBreaksCount = CountLineBreaks(firstNode.NodeText) + 
                                            CountLineBreaks(secNode.NodeText);
-            var lineBreaksCountIsOk = bothNodesLineBreaksCount < 5;
+            var lineBreaksCountIsOk = bothNodesLineBreaksCount < ThreeStructureControllerConfig.MaxLineBreaksCount;
 
             var canCompareProcessNodes =
                 firstNode.NodeType == NodeType.PROCESS
                 && secNode.NodeType == NodeType.PROCESS
-                && bothNodesTextLength < 50
+                && bothNodesTextLength < ThreeStructureControllerConfig.MaxCharsToMergeNodes
                 && lineBreaksCountIsOk;
 
             var canCompareProgramNodes =
                 firstNode.NodeType == NodeType.PROGRAM
                 && secNode.NodeType == NodeType.PROGRAM
-                && bothNodesTextLength < 35
+                && bothNodesTextLength < ThreeStructureControllerConfig.MaxCharsToMergeNodesInShortShape
                 && lineBreaksCountIsOk;
 
             var canCompareInPutNodes =
                 firstNode.NodeType == NodeType.INPUT
                 && secNode.NodeType == NodeType.INPUT
-                && bothNodesTextLength < 50
+                && bothNodesTextLength < ThreeStructureControllerConfig.MaxCharsToMergeNodes
                 && lineBreaksCountIsOk;
             
             var canCompareOutPutNodes =
                 firstNode.NodeType == NodeType.OUTPUT
                 && secNode.NodeType == NodeType.OUTPUT
-                && bothNodesTextLength < 50
+                && bothNodesTextLength < ThreeStructureControllerConfig.MaxCharsToMergeNodes
                 && lineBreaksCountIsOk;
 
             return canCompareProcessNodes || canCompareProgramNodes || canCompareOutPutNodes || canCompareInPutNodes;
@@ -173,7 +181,8 @@ namespace DiagramConstructorV3.app.threeController.structureController
             var res = new List<Token>();
             res.AddRange(firstText.NodeTokens);
             res.Add(new Token(TokenType.COMMA, ",", -1));
-            if (firstText.NodeText.Length > 15 || secText.NodeText.Length > 15)
+            if (firstText.NodeText.Length > ThreeStructureControllerConfig.LineCharsCount 
+                || secText.NodeText.Length > ThreeStructureControllerConfig.LineCharsCount)
             {
                 res.Add(new Token(TokenType.LINE_END, "\n", -1));
             }

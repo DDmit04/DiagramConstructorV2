@@ -3,6 +3,7 @@ using DiagramConstructorV3.app.codeCleaner;
 using DiagramConstructorV3.app.parser;
 using DiagramConstructorV3.app.parser.parseConfig;
 using DiagramConstructorV3.app.threeController.structureController;
+using DiagramConstructorV3.app.threeController.structureController.config;
 using DiagramConstructorV3.app.threeController.textController;
 using DiagramConstructorV3.app.tokenFilter.chain;
 using DiagramConstructorV3.app.tokenizer;
@@ -20,7 +21,7 @@ namespace DiagramConstructorV3.language
             new CppTokenFilterChain(),
             new CppCodeParser(new DefaultParseConfig()),
             new CppThreeTextController(),
-            new CppThreeStructureController())
+            new CppThreeStructureController(new ThreeStructureControllerConfig()))
         { }
 
     }
