@@ -5,12 +5,9 @@
         BEGIN_END, 
         IF,
         FOR,
-        WHILE,
-        DO_WHILE,
         PROCESS,
         PROGRAM,
-        ARROW_LEFT,
-        ARROW_RIGHT,
+        ARROW,
         IN_OUT_PUT, 
         CONNECTOR, 
         PAGE_CONNECTOR, 
@@ -18,6 +15,8 @@
         SMALL_TEXT_FIELD, 
         INVISIBLE_BLOCK,
         LINE,
-        DO
+        LOOP_START,
+        LOOP_END,
+        INIT_SHAPE
     }
 }

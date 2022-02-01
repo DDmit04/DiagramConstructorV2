@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Windows;
 using DiagramConstructorV3.app.builder.data;
 using DiagramConstructorV3.app.parser.data;
@@ -6,17 +7,25 @@ using DiagramConstructorV3.app.utils;
 
 namespace DiagramConstructorV3.app.builder
 {
-    public class DiagramBuilder 
+    public abstract class DiagramBuilder
     {
-        protected readonly VisioApi VisioManipulator;
+        protected VisioApi VisioManipulator;
+        protected LoopNameGenerator LoopNameGenerator;
 
-        protected static readonly double START_X = 1.25;
-        protected static readonly double START_Y = 10.75;
+        protected const double StartX = 1.25;
+        protected const double StartY = 10.75;
+        
+        protected const double MethodsXDist = 4.5;
+        protected const double DefaultShapesYOffset = -1;
+        protected const double InvisibleBlockYOffset = -0.3;
 
-        protected Point StartPoint = new Point(START_X, START_Y);
+        public delegate BranchContext NodeBuildDelegate(Node nextShapeNode, BranchContext thisBranchContext);
+
+        protected Dictionary<NodeType, NodeBuildDelegate> BuildRules = new Dictionary<NodeType, NodeBuildDelegate>();
 
         public DiagramBuilder()
         {
+            LoopNameGenerator = new LoopNameGenerator();
             VisioManipulator = new VisioApi();
         }
 
@@ -32,25 +41,24 @@ namespace DiagramConstructorV3.app.builder
                 throw;
             }
 
-            var currentPos = StartPoint;
+            var currentPos = new Point(StartX, StartY);
             foreach (var method in allMethods)
             {
-                if (!method.MethodSignature.Equals("main()"))
+                if (method.MethodType == MethodType.COMMON)
                 {
-                    PlaceTextField(method.MethodSignature, currentPos);
+                    VisioManipulator.DropTextField(method.MethodSignature, currentPos);
                     currentPos.Offset(0, -0.4);
                 }
 
-                var treeContext = PlaceBeginShape(currentPos);
+                var initShape = VisioManipulator.DropSimpleShape("", new Point(currentPos.X, currentPos.Y - 0.25), ShapeForm.INIT_SHAPE);
+                var treeContext = new BranchContext(null, initShape, initShape);
                 foreach (var node in method.MethodNodes)
                 {
                     treeContext = BuildTree(node, treeContext);
-                    treeContext.BranchPos = default;
-                    treeContext.BranchParent = null;
-                    treeContext.BranchRelation = NodesBranchRelation.OTHER_BRANCH;
+                    treeContext = new BranchContext(null, treeContext.LastBranchShape, treeContext.ShapeToContinueThree,
+                        NodesBranchRelation.OTHER_BRANCH);
                 }
-                PlaceEndShape(treeContext);
-                MoveCordsToNewMethod(currentPos);
+                MoveCordsToNextMethod(currentPos);
             }
 
             string diagramFilename;
@@ -65,182 +73,98 @@ namespace DiagramConstructorV3.app.builder
 
             return diagramFilename;
         }
-
-        private BranchContext BuildTree(Node node, BranchContext thisBranchContext)
+        
+        protected BranchContext BuildTree(Node node, BranchContext thisBranchContext)
         {
-            var prevShape = thisBranchContext.ShapeToContinueThree;
-            var newShapePos = MoveToNextShapePos(thisBranchContext.LastBranchShape, node, thisBranchContext.BranchPos);
-            var lastDroppedShape = VisioManipulator.DropShape(node, newShapePos);
-            var newBranchContext = new BranchContext(lastDroppedShape, lastDroppedShape, lastDroppedShape);
-            VisioManipulator.ConnectShapes(lastDroppedShape, prevShape, thisBranchContext.BranchRelation);
-            if (!node.IsSimpleNode)
+            BranchContext newBranchContext;
+            if (BuildRules.ContainsKey(node.NodeType))
             {
-                var nodeType = node.NodeType;
-                if (nodeType == NodeType.DO_WHILE)
-                {
-                    var branchHeight = BuilderUtils.CalcThreeHeight(node);
-                    var yesTextPoint = new Point(newShapePos.X - 0.7, newShapePos.Y - branchHeight + 0.2);
-                    var noTextPoint = new Point(newShapePos.X + 0.3, newShapePos.Y - branchHeight - 0.4);
-                    VisioManipulator.DropSmallTextField("Да", yesTextPoint);
-                    VisioManipulator.DropSmallTextField("Нет", noTextPoint);
-                    newBranchContext = BuildSubTree(node.ChildNodes, newBranchContext);
-                    newShapePos = MoveToNextShapePos(newBranchContext.LastBranchShape);
-                    var lastDoWhileShape = VisioManipulator.DropSimpleShape(node.NodeText, newShapePos, ShapeForm.DO_WHILE);
-                    VisioManipulator.ConnectShapes(lastDoWhileShape, newBranchContext.ShapeToContinueThree);
-                    newBranchContext = new BranchContext(lastDroppedShape, lastDoWhileShape, lastDoWhileShape);
-                }
-                else if (nodeType == NodeType.WHILE)
-                {
-                    var yesTextPoint = new Point(newShapePos.X + 0.28, newShapePos.Y - 0.7);
-                    var noTextPoint = new Point(newShapePos.X + 0.7, newShapePos.Y + 0.2);
-                    VisioManipulator.DropSmallTextField("Да", yesTextPoint);
-                    VisioManipulator.DropSmallTextField("Нет", noTextPoint);
-                    var invisibleShapePos = new Point(newShapePos.X, newShapePos.Y + 0.5);
-                    var invisibleBlock = VisioManipulator.DropInvisibleShape(invisibleShapePos);
-                    newBranchContext.BranchParent = invisibleBlock;
-                    newBranchContext.BranchRelation = NodesBranchRelation.SAME_BRANCH;
-                    var tmpContext = BuildSubTree(node.ChildNodes, newBranchContext);
-                    newBranchContext.LastBranchShape = tmpContext.LastBranchShape;
-                }
-                else if (nodeType == NodeType.IF || nodeType == NodeType.ELSE_IF)
-                {
-                    var yesTextPoint = new Point(newShapePos.X - 0.7, newShapePos.Y + 0.2);
-                    var noTextPoint = new Point(newShapePos.X + 0.7, newShapePos.Y + 0.2);
-                    VisioManipulator.DropSmallTextField("Да", yesTextPoint);
-                    VisioManipulator.DropSmallTextField("Нет", noTextPoint);
-
-                    var branchHeight = BuilderUtils.CalcThreeHeight(node);
-                    var invisibleBlockPos = new Point(newShapePos.X, newShapePos.Y - branchHeight);
-                    var invisibleBlock = VisioManipulator.DropInvisibleShape(invisibleBlockPos);
-
-                    var ifBranchContainsIf = IsBranchContainsIf(node.ChildNodes);
-                    var ifBranchPos = new Point(newShapePos.X - 1.2, newShapePos.Y);
-                    if (ifBranchContainsIf)
-                    {
-                        ifBranchPos.Offset(-1.5, 0);
-                    }
-                    var tmpContext = newBranchContext;
-                    tmpContext.BranchRelation = NodesBranchRelation.IF_BRANCH;
-                    tmpContext.BranchPos = ifBranchPos;
-                    tmpContext = BuildSubTree(node.ChildNodes, tmpContext);
-                    VisioManipulator.ConnectShapes(invisibleBlock, tmpContext.ShapeToContinueThree);
-
-                    newBranchContext.BranchParent = null;
-                    var elseBranchContainsIf = IsBranchContainsIf(node.ChildElseNodes);
-                    var elseBranchPos = new Point(newShapePos.X + 1.2, newShapePos.Y);
-                    if (elseBranchContainsIf)
-                    {
-                        elseBranchPos.Offset(1.5, 0);
-                    }
-                    tmpContext = newBranchContext;
-                    tmpContext.BranchPos = elseBranchPos;
-                    tmpContext.BranchRelation = NodesBranchRelation.ELSE_BRANCH;
-                    tmpContext = BuildSubTree(node.ChildElseNodes, tmpContext);
-                    VisioManipulator.ConnectShapes(invisibleBlock, tmpContext.ShapeToContinueThree);
-
-                    newBranchContext = new BranchContext(thisBranchContext.BranchParent, invisibleBlock, invisibleBlock);
-                }
-                else
-                {
-                    var tmpContext = BuildSubTree(node.ChildNodes, newBranchContext);
-                    newBranchContext.LastBranchShape = tmpContext.LastBranchShape;
-                }
-
-                if (newBranchContext.BranchParent != null)
-                {
-                    VisioManipulator.ConnectShapes(newBranchContext.LastBranchShape, newBranchContext.BranchParent, NodesBranchRelation.PARENT);
-                }
+                newBranchContext = BuildRules[node.NodeType].Invoke(node, thisBranchContext);
             }
+            else
+            {
+                newBranchContext = BuildSimpleNode(node, thisBranchContext);
+            }
+
             return newBranchContext;
         }
 
-        private BranchContext BuildSubTree(List<Node> nodes, BranchContext context)
+        protected BranchContext BuildSubTreeNodes(List<Node> nodes, BranchContext context)
         {
+            var lastParent = context.BranchParent;
             var tmpContext = context;
             foreach (var node in nodes)
             {
                 tmpContext = BuildTree(node, tmpContext);
             }
+            tmpContext.ChangeBranchParent(lastParent);
             return tmpContext;
         }
 
-        private void PlaceEndShape(BranchContext context)
+        protected BranchContext BuildSimpleNode(Node nextShapeNode, BranchContext thisBranchContext)
         {
-            var lastShape = context.LastBranchShape;
-            var endShapePos = new Point(lastShape.CurrentPos.X, lastShape.CurrentPos.Y);
-            endShapePos.Offset(0, -0.7);
-            var endShapeText = "Конец";
-            var endShape = VisioManipulator.DropSimpleShape(endShapeText, endShapePos, ShapeForm.BEGIN_END);
-            VisioManipulator.ConnectShapes(endShape, context.ShapeToContinueThree, NodesBranchRelation.OTHER_BRANCH);
-        }
-
-        private BranchContext PlaceBeginShape(Point beginShapePos)
-        {
-            var beginShapeText = "Начало";
-            var beginShape = VisioManipulator.DropSimpleShape(beginShapeText, beginShapePos, ShapeForm.BEGIN_END);
-            return new BranchContext(null, beginShape, beginShape);
-        }
-
-        private void PlaceTextField(string text, Point point)
-        {
-            VisioManipulator.DropTextField(text, point);
-        }
-
-        private void MoveCordsToNewMethod(Point point)
-        {
-            point.Offset(4.5, 0);
-        }
-
-        private static Point MoveToNextShapePos(ShapeWrapper lastShape, Node newShapeNode = null, Point pos = default)
-        {
-            if (pos == default)
-            {
-                pos = lastShape.CurrentPos;
-            }
-            var resOffsetPoint = GetNextShapeOffsetWithPrevShape(lastShape);
-            if (newShapeNode != null)
-            {
-                var nextShapeOffsetPoint = GetNextShapeOffsetWithNextShape(newShapeNode);
-                resOffsetPoint.Offset(nextShapeOffsetPoint.X, nextShapeOffsetPoint.Y);
-            }
-            return new Point(pos.X + resOffsetPoint.X,  pos.Y + resOffsetPoint.Y);
-        }
-
-        private static Point GetNextShapeOffsetWithPrevShape(ShapeWrapper lastShape)
-        {
-            var offsetPoint = new Point(0, 0);
-            var lastShapeType = lastShape.ShapeForm;
-            if (lastShapeType == ShapeForm.BEGIN_END)
-            {
-                offsetPoint.Offset(0, -0.75);
-            }
-            else if (lastShapeType == ShapeForm.IF)
-            {
-                offsetPoint.Offset(0, -0.8);
-            }
-            else if (lastShapeType == ShapeForm.INVISIBLE_BLOCK || lastShapeType == ShapeForm.DO)
-            {
-                offsetPoint.Offset(0, -0.5);
-            }
-            else
-            {
-                offsetPoint.Offset(0, -1);
-            }
-            return offsetPoint;
+            var newBranchContext = DropNextShape(nextShapeNode, thisBranchContext);
+            ConnectLastDroppedShape(newBranchContext);
+            return newBranchContext;
         }
         
-        private static Point GetNextShapeOffsetWithNextShape(Node newShapeNode)
+        protected BranchContext DropNextShape(Node node, BranchContext thisBranchContext)
         {
-            var offsetPoint = new Point(0, 0);
-            var newShapeForm = newShapeNode.NodeShapeForm;
-            if (newShapeForm == ShapeForm.INVISIBLE_BLOCK || newShapeForm == ShapeForm.DO)
+            var newShapePos = GetNextShapePos(thisBranchContext, node);
+            if (thisBranchContext.BranchOffset != default)
             {
-                offsetPoint.Offset(0, +0.5);
+                newShapePos.Offset(thisBranchContext.BranchOffset.X, thisBranchContext.BranchOffset.Y);
+                thisBranchContext.ResetOffset();
             }
-            return offsetPoint;
+
+            var lastDroppedShape = VisioManipulator.DropShape(node, newShapePos);
+            thisBranchContext.SetLastShape(lastDroppedShape);
+            return thisBranchContext;
+        }
+        
+        protected void ConnectLastDroppedShape(BranchContext thisBranchContext)
+        {
+            var prevShape = thisBranchContext.ShapeToContinueThree;
+            var lastDroppedShape = thisBranchContext.LastBranchShape;
+            if (prevShape != null && lastDroppedShape != null)
+            {
+                VisioManipulator.ConnectShapes(lastDroppedShape, prevShape, thisBranchContext.BranchRelation);
+                thisBranchContext.ContinueTreeWithShape(lastDroppedShape);
+            }
         }
 
-        private bool IsBranchContainsIf(List<Node> nodes)
+        protected void ConnectToParent(BranchContext branchContext)
+        {
+            var lastDroppedShape = branchContext.ShapeToContinueThree;
+            if (branchContext.BranchParent != null && lastDroppedShape != null)
+            {
+                var branchParent = branchContext.BranchParent;
+                VisioManipulator.ConnectShapes(lastDroppedShape, branchParent, NodesBranchRelation.PARENT);
+            }
+        }
+
+        protected void MoveCordsToNextMethod(Point point)
+        {
+            point.Offset(MethodsXDist, 0);
+        }
+
+        protected Point GetNextShapePos(BranchContext context, Node newShapeNode = null)
+        {
+            var pos = context.BranchPos;
+            var lastShape = context.LastBranchShape;
+            var resOffsetPoint = new Point(0, 0);
+            if (lastShape.ShapeForm != ShapeForm.INIT_SHAPE)
+            {
+                resOffsetPoint.Offset(0, DefaultShapesYOffset);
+            }
+            else if (lastShape.ShapeForm == ShapeForm.INVISIBLE_BLOCK)
+            {
+                resOffsetPoint.Offset(0, InvisibleBlockYOffset);
+            }
+            return new Point(pos.X + resOffsetPoint.X, pos.Y + resOffsetPoint.Y);
+        }
+
+        protected bool IsBranchContainsIf(List<Node> nodes)
         {
             foreach (var node in nodes)
             {
@@ -248,9 +172,11 @@ namespace DiagramConstructorV3.app.builder
                 {
                     return true;
                 }
-                return IsBranchContainsIf(node.ChildNodes) || IsBranchContainsIf(node.ChildIfNodes) ||
-                       IsBranchContainsIf(node.ChildElseNodes);
+
+                return IsBranchContainsIf(node.PrimaryChildNodes) ||
+                       IsBranchContainsIf(node.SecondaryChildNodes);
             }
+
             return false;
         }
     }

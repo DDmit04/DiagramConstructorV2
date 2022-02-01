@@ -9,7 +9,6 @@ namespace DiagramConstructorV3.app.builder
 {
     public class VisioApi
     {
-
         protected Microsoft.Office.Interop.Visio.Application VisioApp;
         protected Document VisioStencil;
 
@@ -26,27 +25,31 @@ namespace DiagramConstructorV3.app.builder
         protected Master SmallTextField;
         protected Master Arrow;
         protected Master LittleInvisibleBlock;
+        protected Master LoopStart;
+        protected Master LoopEnd;
 
         public void OpenDocument()
         {
             VisioApp = new Microsoft.Office.Interop.Visio.Application();
             VisioStencil = VisioApp.Documents.OpenEx(
-               AppConfiguration.ShapesMastersFilePath,
-               (short)VisOpenSaveArgs.visOpenDocked
+                AppConfiguration.ShapesMastersFilePath,
+                (short)VisOpenSaveArgs.visOpenDocked
             );
-            Begin = VisioStencil.Masters.get_ItemU(@"Begin");
-            Process = VisioStencil.Masters.get_ItemU(@"Process");
-            InOutPut = VisioStencil.Masters.get_ItemU(@"inoutput");
-            IfState = VisioStencil.Masters.get_ItemU(@"if");
-            ForState = VisioStencil.Masters.get_ItemU(@"for");
-            Program = VisioStencil.Masters.get_ItemU(@"program");
-            Connector = VisioStencil.Masters.get_ItemU(@"Connector");
-            PageConnector = VisioStencil.Masters.get_ItemU(@"pageConnector");
-            Line = VisioStencil.Masters.get_ItemU(@"line");
-            TextField = VisioStencil.Masters.get_ItemU(@"textField");
-            SmallTextField = VisioStencil.Masters.get_ItemU(@"yesNo");
-            Arrow = VisioStencil.Masters.get_ItemU(@"arrowRight");
-            LittleInvisibleBlock = VisioStencil.Masters.get_ItemU(@"LittleInvisibleBlock");
+            Begin = VisioStencil.Masters.ItemU[@"Begin"];
+            Process = VisioStencil.Masters.ItemU[@"Process"];
+            InOutPut = VisioStencil.Masters.ItemU[@"inoutput"];
+            IfState = VisioStencil.Masters.ItemU[@"if"];
+            ForState = VisioStencil.Masters.ItemU[@"for"];
+            Program = VisioStencil.Masters.ItemU[@"program"];
+            Connector = VisioStencil.Masters.ItemU[@"Connector"];
+            PageConnector = VisioStencil.Masters.ItemU[@"pageConnector"];
+            Line = VisioStencil.Masters.ItemU[@"line"];
+            TextField = VisioStencil.Masters.ItemU[@"textField"];
+            SmallTextField = VisioStencil.Masters.ItemU[@"yesNo"];
+            Arrow = VisioStencil.Masters.ItemU[@"arrowRight"];
+            LittleInvisibleBlock = VisioStencil.Masters.ItemU[@"InvisibleBlock"];
+            LoopStart = VisioStencil.Masters.ItemU[@"StartLoop"];
+            LoopEnd = VisioStencil.Masters.ItemU[@"EndLoop"];
             VisioApp.Documents.Add("");
         }
 
@@ -68,16 +71,16 @@ namespace DiagramConstructorV3.app.builder
         public string SaveDiagramDocument(string diagramFilePath)
         {
             var currentDate = DateTime.Now.ToString("dd-mm-yyyy__HH_mm_ss_fff");
-            var resultFilePath = diagramFilePath + @"\result " + currentDate + AppConfiguration.DiagramFileExtension; 
+            var resultFilePath = diagramFilePath + @"\result " + currentDate + AppConfiguration.DiagramFileExtension;
             VisioApp.ActiveDocument.SaveAs(resultFilePath);
             return resultFilePath;
         }
-        
+
         public ShapeWrapper DropInvisibleShape(Point point)
         {
             return DropSimpleShape("", point, ShapeForm.INVISIBLE_BLOCK);
         }
-        
+
         public ShapeWrapper DropShape(Node node, Point shapePos)
         {
             if (node != null)
@@ -86,18 +89,20 @@ namespace DiagramConstructorV3.app.builder
                 {
                     return DropInvisibleShape(shapePos);
                 }
+
                 return DropSimpleShape(node.NodeText, shapePos, node.NodeShapeForm);
             }
-            throw new NullReferenceException("Node to place shape can't be null!");
 
+            throw new NullReferenceException("Node to place shape can't be null!");
         }
+
         public ShapeWrapper DropSimpleShape(string text, Point point, ShapeForm shapeForm = ShapeForm.PROCESS)
         {
             var visioPage = VisioApp.ActivePage;
             var shapeMaster = GetShapeMasterByShapeForm(shapeForm);
             var droppedShape = visioPage.Drop(shapeMaster, point.X, point.Y);
             droppedShape.Text = text;
-            return new ShapeWrapper(droppedShape, shapeForm, text, point);;
+            return new ShapeWrapper(droppedShape, shapeForm, text, point);
         }
 
         public void DropSmallTextField(string text, Point point)
@@ -105,31 +110,66 @@ namespace DiagramConstructorV3.app.builder
             DropTextField(text, point, ShapeForm.SMALL_TEXT_FIELD);
         }
 
-        public void DropTextField(string text, Point point)
-        {
-            DropTextField(text, point, ShapeForm.TEXT_FIELD);
-        }
-
-        private void DropTextField(string text, Point point, ShapeForm textFieldType)
+        public void DropTextField(string text, Point point, ShapeForm textFieldType = ShapeForm.TEXT_FIELD)
         {
             DropSimpleShape(text, point, textFieldType);
         }
 
-        public void ConnectShapes(ShapeWrapper shapeFrom, ShapeWrapper shapeTo, NodesBranchRelation nodesBranchRelation = NodesBranchRelation.SAME_BRANCH)
+        public void ConnectShapes(ShapeWrapper shapeFrom, ShapeWrapper shapeTo,
+            NodesBranchRelation nodesBranchRelation = NodesBranchRelation.SAME_BRANCH)
         {
             var connectionType = BuilderUtils.DefineConnectionType(shapeFrom, shapeTo, nodesBranchRelation);
-            var connectorMaster = GetConnectionMasterFromConnectionType(connectionType, nodesBranchRelation);
-            BuilderUtils.GetCellsAlignsFromConnectionType(out var connectionFromType, out var connectionToType, connectionType);
-            ConnectWithDynamicGlueAndConnector(shapeFrom, shapeTo, connectorMaster, connectionFromType, connectionToType);
+            ConnectShapes(shapeFrom, shapeTo, nodesBranchRelation, connectionType);
         }
-        protected Master GetConnectionMasterFromConnectionType(ShapeConnectionType connectionType, NodesBranchRelation nodesBranchRelation)
+
+        public void ConnectShapes(ShapeWrapper shapeFrom, ShapeWrapper shapeTo, ConnectionMaserType connectionMaserType,
+            ShapeConnectionType connectionType)
+        {
+            var connectorMaster = GetConnectionMasterFromConnectionMasterType(connectionMaserType);
+            ConnectShapes(shapeFrom, shapeTo, connectorMaster, connectionType);
+        }
+
+        public void ConnectShapes(ShapeWrapper shapeFrom, ShapeWrapper shapeTo, NodesBranchRelation nodesBranchRelation,
+            ShapeConnectionType connectionType)
+        {
+            var connectorMaster = GetConnectionMasterFromConnectionType(connectionType, nodesBranchRelation);
+            ConnectShapes(shapeFrom, shapeTo, connectorMaster, connectionType);
+        }
+
+        public void ConnectShapes(ShapeWrapper shapeFrom, ShapeWrapper shapeTo, Master connectorMaster,
+            ShapeConnectionType connectionType)
+        {
+            if (shapeFrom.ShapeForm != ShapeForm.INIT_SHAPE && shapeTo.ShapeForm != ShapeForm.INIT_SHAPE)
+            {
+                BuilderUtils.GetCellsAlignsFromConnectionType(out var connectionFromType, out var connectionToType,
+                    connectionType);
+                ConnectWithDynamicGlueAndConnector(shapeFrom, shapeTo, connectorMaster, connectionFromType,
+                    connectionToType);
+            }
+        }
+
+        protected Master GetConnectionMasterFromConnectionMasterType(ConnectionMaserType connectionMaserType)
+        {
+            switch (connectionMaserType)
+            {
+                case ConnectionMaserType.LINE:
+                    return Line;
+                case ConnectionMaserType.ARROW:
+                    return Arrow;
+                default:
+                    return Line;
+            }
+        }
+
+        protected Master GetConnectionMasterFromConnectionType(ShapeConnectionType connectionType,
+            NodesBranchRelation nodesBranchRelation)
         {
             if (nodesBranchRelation == NodesBranchRelation.SAME_BRANCH
                 || nodesBranchRelation == NodesBranchRelation.ELSE_BRANCH
                 || nodesBranchRelation == NodesBranchRelation.IF_BRANCH)
             {
                 return Line;
-            } 
+            }
             else if (nodesBranchRelation == NodesBranchRelation.PARENT)
             {
                 switch (connectionType)
@@ -142,6 +182,7 @@ namespace DiagramConstructorV3.app.builder
                         return Line;
                 }
             }
+
             switch (connectionType)
             {
                 case ShapeConnectionType.FROM_TOP_TO_BOT:
@@ -170,8 +211,12 @@ namespace DiagramConstructorV3.app.builder
                 case ShapeForm.FOR:
                     resultFigure = ForState;
                     break;
-                case ShapeForm.WHILE:
-                case ShapeForm.DO_WHILE:
+                case ShapeForm.LOOP_START:
+                    resultFigure = LoopStart;
+                    break;
+                case ShapeForm.LOOP_END:
+                    resultFigure = LoopEnd;
+                    break;
                 case ShapeForm.IF:
                     resultFigure = IfState;
                     break;
@@ -181,7 +226,7 @@ namespace DiagramConstructorV3.app.builder
                 case ShapeForm.PROGRAM:
                     resultFigure = Program;
                     break;
-                case ShapeForm.ARROW_RIGHT:
+                case ShapeForm.ARROW:
                     resultFigure = Arrow;
                     break;
                 case ShapeForm.LINE:
@@ -203,10 +248,11 @@ namespace DiagramConstructorV3.app.builder
                     resultFigure = SmallTextField;
                     break;
                 case ShapeForm.INVISIBLE_BLOCK:
-                case ShapeForm.DO:
+                case ShapeForm.INIT_SHAPE:
                     resultFigure = LittleInvisibleBlock;
                     break;
             }
+
             return resultFigure;
         }
 
@@ -234,26 +280,21 @@ namespace DiagramConstructorV3.app.builder
             Page visioPage = VisioApp.ActivePage;
             var connector = visioPage.Drop(connectorMaster, x, y);
 
-            var beginXCell = connector.get_CellsSRC(
-                (short)VisSectionIndices.visSectionObject,
+            var beginXCell = connector.CellsSRC[(short)VisSectionIndices.visSectionObject,
                 (short)VisRowIndices.visRowXForm1D,
-                (short)VisCellIndices.vis1DBeginX);
+                (short)VisCellIndices.vis1DBeginX];
 
-            beginXCell.GlueTo(shapeFrom.get_CellsSRC(
-                (short)VisSectionIndices.visSectionObject,
+            beginXCell.GlueTo(shapeFrom.CellsSRC[(short)VisSectionIndices.visSectionObject,
                 (short)VisRowIndices.visRowAlign,
-                (short)fromPoint));
+                (short)fromPoint]);
 
-            var endXCell = connector.get_CellsSRC(
-                (short)VisSectionIndices.visSectionObject,
+            var endXCell = connector.CellsSRC[(short)VisSectionIndices.visSectionObject,
                 (short)VisRowIndices.visRowXForm1D,
-                (short)VisCellIndices.vis1DEndX);
+                (short)VisCellIndices.vis1DEndX];
 
-            endXCell.GlueTo(shapeTo.get_CellsSRC(
-                (short)VisSectionIndices.visSectionObject,
+            endXCell.GlueTo(shapeTo.CellsSRC[(short)VisSectionIndices.visSectionObject,
                 (short)VisRowIndices.visRowAlign,
-                (short)toPoint));
+                (short)toPoint]);
         }
-
     }
 }
