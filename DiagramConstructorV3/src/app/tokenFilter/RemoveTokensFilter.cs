@@ -6,27 +6,25 @@ namespace DiagramConstructorV3.app.tokenFilter
 {
     public class RemoveTokensFilter : TokenFilter
     {
-        protected readonly TokenPattern PatternToRemove;
-
-        public RemoveTokensFilter(TokenPattern pattern, int priority) : base(priority)
+        public RemoveTokensFilter(TokenPattern pattern, int priority) : base(pattern, priority)
         {
-            PatternToRemove = pattern;
+            FilterPattern = pattern;
         }
 
-        public RemoveTokensFilter(TokenPattern pattern)
+        public RemoveTokensFilter(TokenPattern pattern): base(pattern)
         {
-            PatternToRemove = pattern;
+            FilterPattern = pattern;
         }
 
         public override List<Token> ApplyFilter(List<Token> tokens)
         {
             var from = 0;
-            var patternRes = PatternToRemove.GetMatch(tokens, from);
+            var patternRes = FilterPattern.GetMatch(tokens, from);
             while (patternRes.IsFullMatch)
             {
                 tokens.RemoveRange(patternRes.Start, patternRes.Length);
                 from = patternRes.Start;
-                patternRes = PatternToRemove.GetMatch(tokens, from);
+                patternRes = FilterPattern.GetMatch(tokens, from);
             }
 
             return tokens;

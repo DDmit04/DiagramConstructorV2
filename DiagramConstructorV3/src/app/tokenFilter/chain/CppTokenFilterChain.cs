@@ -4,9 +4,11 @@ using System.Linq;
 using DiagramConstructorV3.app.exceptions;
 using DiagramConstructorV3.app.parser.data;
 using DiagramConstructorV3.app.tokenizer.data;
+using DiagramConstructorV3.app.tokenPattern;
 using DiagramConstructorV3.app.tokenPattern.boundaryPatterns;
 using DiagramConstructorV3.app.tokenPattern.builders;
 using DiagramConstructorV3.app.tokenPattern.commonPatterns;
+using DiagramConstructorV3.app.tokenPattern.patternMatch;
 using DiagramConstructorV3.app.utils;
 
 namespace DiagramConstructorV3.app.tokenFilter.chain
@@ -94,36 +96,51 @@ namespace DiagramConstructorV3.app.tokenFilter.chain
                     .Build())
                 .NextPattern(TokensBlockPattern.BracketBlock)
                 .Build();
-
-            Filters.AddRange(new List<TokenFilter>()
-            {
-                new RemoveTokensFilter(gotoLabelPattern, TokenFilter.HighestPriority),
-                new RemoveTokensFilter(gotoConstructionPattern, TokenFilter.HighestPriority),
-                new RemoveTokensFilter(catchBlockPattern, TokenFilter.HighestPriority),
-                new RemoveTokensFilter(structDefPattern, TokenFilter.HighestPriority),
-                new RemoveTokensFilter(structVarInitComboPattern, TokenFilter.HighestPriority),
-                new RemoveTokensFilter(accessModificatorPattern, TokenFilter.HighestPriority),
-                new RemoveTokensFilter(classQualifierPattern, TokenFilter.HighestPriority),
-
-                new EditTokensFilter(FilterTryBlock, TokenFilter.PreHighestPriority),
-                new EditTokensFilter(ClassFilter, TokenFilter.PreHighestPriority),
-
-                new RemoveTokensFilter(throwLinePattern),
-                new RemoveTokensFilter(castPattern),
-
-                new RemoveTokensFilter(emptyObjVarsPattern, TokenFilter.LowestPriority),
-                new RemoveTokensFilter(varDefPattern, TokenFilter.LowestPriority)
-            });
-        }
-
-        protected List<Token> ClassFilter(List<Token> tokens)
-        {
+            
+            var tryPattern = ComboPatternByFirstMatchBuilder
+                .Reset()
+                .NextPattern(new SingleTokenPattern(TokenType.TRY_OPERATOR))
+                .NextPattern(TokensBlockPattern.BracketBlock)
+                .Build();
+            
             var classDefPattern = ComboPatternByFirstMatchBuilder
                 .Reset()
                 .NextPattern(new SingleTokenPattern(TokenType.CLASS_OPERATOR))
                 .NextPattern(new SingleTokenPattern(TokenType.IDENTIFIER))
                 .NextPattern(TokensBlockPattern.BracketBlock)
                 .Build();
+
+            var lineBreakFilter = new SingleTokenPattern(TokenType.NEW_LINE);
+            var tabFilter = new SingleTokenPattern(TokenType.TABULATION);
+            var carriageRetFilter = new SingleTokenPattern(TokenType.CARRIAGE_RETURN);
+            
+            Filters.AddRange(new List<TokenFilter>()
+            {
+                new RemoveTokensFilter(lineBreakFilter, TokenFilter.HighestPriority),
+                new RemoveTokensFilter(tabFilter, TokenFilter.HighestPriority),
+                new RemoveTokensFilter(carriageRetFilter, TokenFilter.HighestPriority),
+
+                new RemoveTokensFilter(gotoLabelPattern, TokenFilter.PreHighestPriority),
+                new RemoveTokensFilter(gotoConstructionPattern, TokenFilter.PreHighestPriority),
+                new RemoveTokensFilter(catchBlockPattern, TokenFilter.PreHighestPriority),
+                new RemoveTokensFilter(structDefPattern, TokenFilter.PreHighestPriority),
+                new RemoveTokensFilter(structVarInitComboPattern, TokenFilter.PreHighestPriority),
+                new RemoveTokensFilter(accessModificatorPattern, TokenFilter.PreHighestPriority),
+                new RemoveTokensFilter(classQualifierPattern, TokenFilter.PreHighestPriority),
+
+                new StrictEditTokensFilter(FilterTryBlock, tryPattern),
+                new StrictEditTokensFilter(ClassFilter, classDefPattern),
+
+                new RemoveTokensFilter(throwLinePattern, TokenFilter.PreLowestPriority),
+                new RemoveTokensFilter(castPattern, TokenFilter.PreLowestPriority),
+
+                new RemoveTokensFilter(emptyObjVarsPattern, TokenFilter.LowestPriority),
+                new RemoveTokensFilter(varDefPattern, TokenFilter.LowestPriority)
+            });
+        }
+
+        protected List<Token> ClassFilter(TokenPattern classDefPattern, List<Token> tokens)
+        {
             var classDef = classDefPattern.GetMatch(tokens);
             while (classDef.IsPartMatch)
             {
@@ -146,13 +163,8 @@ namespace DiagramConstructorV3.app.tokenFilter.chain
             return tokens;
         }
 
-        protected List<Token> FilterTryBlock(List<Token> tokens)
+        protected List<Token> FilterTryBlock(TokenPattern tryPattern, List<Token> tokens)
         {
-            var tryPattern = ComboPatternByFirstMatchBuilder
-                .Reset()
-                .NextPattern(new SingleTokenPattern(TokenType.TRY_OPERATOR))
-                .NextPattern(TokensBlockPattern.BracketBlock)
-                .Build();
             var tryMatch = tryPattern.GetMatch(tokens);
             while (tryMatch.IsPartMatch)
             {
@@ -160,9 +172,9 @@ namespace DiagramConstructorV3.app.tokenFilter.chain
                 var codeBlockMatch = tryMatch.GetMatch(1);
                 if (tryMatch.IsFullMatch)
                 {
-                    var tryBlockLexes = tokens.GetRange(codeBlockMatch.Start + 1, codeBlockMatch.Length - 2);
+                    var tryBlockTokens = tokens.GetRange(codeBlockMatch.Start + 1, codeBlockMatch.Length - 2);
                     tokens.RemoveRange(tryMatch.Start, tryMatch.Length);
-                    tokens.InsertRange(tryMatch.Start, tryBlockLexes);
+                    tokens.InsertRange(tryMatch.Start, tryBlockTokens);
                     tryMatch = tryPattern.GetMatch(tokens, tryMatch.Start + codeBlockMatch.Length);
                 }
                 else if (tryOpMatch.IsFullMatch && !codeBlockMatch.IsFullMatch)
