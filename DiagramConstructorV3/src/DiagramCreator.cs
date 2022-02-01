@@ -5,8 +5,7 @@ namespace DiagramConstructorV3
 {
     public class DiagramCreator
     {
-
-        protected readonly DiagramBuilder DiagramBuilder = new DiagramBuilder();
+        protected readonly DiagramBuilder DiagramBuilder = new DefaultDiagramBuilder();
         protected readonly Language Language;
 
         public DiagramCreator(Language language)
@@ -14,17 +13,17 @@ namespace DiagramConstructorV3
             Language = language;
         }
 
-        public string CreateDiagram(string code, string diagramFilepath, bool closeAfterBuild)
+        public string CreateDiagram(DiagramCreateProps diagramCreateProps)
         {
-            code = Language.CodeCleaner.CleanCodeBeforeParse(code);
-            var tokens = Language.CodeTokenizer.TokenizeCode(code);
-            tokens = Language.TokenFilterChain.DoFilters(tokens);
-            var codeAst = Language.CodeParser.ParseCode(tokens);
-            codeAst = Language.ThreeStructureController.OptimizeStructure(codeAst);
-            codeAst = Language.TextController.ApplyTextRules(codeAst);
-            var diagramFilename = DiagramBuilder.BuildDiagram(codeAst, closeAfterBuild, diagramFilepath);
+            var code = Language.CleanCodeBeforeParse(diagramCreateProps.Code);
+            var tokens = Language.TokenizeCode(code);
+            tokens = Language.FilterTokens(tokens);
+            var codeAst = Language.ParseTokens(tokens);
+            codeAst = Language.ApplyNodeTextRules(codeAst);
+            codeAst = Language.OptimizeMethodsStructure(codeAst);
+            var diagramFilename = DiagramBuilder.BuildDiagram(codeAst, diagramCreateProps.CloseDiagramAfterBuild,
+                diagramCreateProps.DiagramPath);
             return diagramFilename;
         }
-
     }
 }
