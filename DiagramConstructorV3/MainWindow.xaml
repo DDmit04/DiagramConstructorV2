@@ -14,20 +14,26 @@
             <RowDefinition Height="58*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="365*"/>
-            <ColumnDefinition Width="223*"/>
-            <ColumnDefinition Width="114*"/>
+            <ColumnDefinition Width="300*"/>
+            <ColumnDefinition Width="173*"/>
+            <ColumnDefinition Width="104*"/>
         </Grid.ColumnDefinitions>
-        <CheckBox x:Name="closeAfterBuildCheckBox" Content="Закрыть документ диаграммы после построения" Margin="10,0,0,12.667" FontSize="14" Grid.Row="2" IsEnabled="False" IsThreeState = "False" Height="18" VerticalAlignment="Bottom" Opacity="0.5" HorizontalAlignment="Left" Width="342" Grid.ColumnSpan="2"/>
-        <TextBox x:Name="filepathTextBox" Height="90" Margin="10,88,21,0" TextWrapping="Wrap" VerticalAlignment="Top" PreviewMouseDown="FilepathTextBox_MouseDown" AllowDrop="True" PreviewDragOver="filepathTextBox_PreviewDragOver" PreviewDrop="filepathTextBox_PreviewDrop" Cursor="Arrow" Text="&#x0a; Перетащите нужный файл или кликните для выбора вручную" FontSize="18" Opacity="0.5" TextAlignment="Center" AcceptsReturn="True" Grid.ColumnSpan="3"/>
-        <TextBox x:Name="codeContentTextBox" Margin="10,225,21,10.667" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Visible" IsReadOnly="True" TextChanged="codeContentTextBox_TextChanged" Grid.ColumnSpan="3" IsEnabled="False" AcceptsTab="True"/>
+        <avalonEdit:TextEditor
+            BorderBrush="Black" BorderThickness="1"
+            ShowLineNumbers="True"
+            x:Name="codeContentTextBox" Margin="10,225,20.8,11" VerticalScrollBarVisibility="Visible" IsReadOnly="True" TextChanged="codeContentTextBox_TextChanged" Grid.ColumnSpan="3" IsEnabled="False"
+    xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
+    SyntaxHighlighting="awdad"/>
+
+        <CheckBox x:Name="closeAfterBuildCheckBox" Content="Закрыть документ диаграммы после построения" Margin="10,0,0,12.4" FontSize="14" Grid.Row="2" IsEnabled="False" IsThreeState = "False" Height="18" VerticalAlignment="Bottom" Opacity="0.5" HorizontalAlignment="Left" Width="342" Grid.ColumnSpan="2"/>
+        <TextBox x:Name="filepathTextBox" Height="90" Margin="10,88,20.8,0" TextWrapping="Wrap" VerticalAlignment="Top" PreviewMouseDown="FilepathTextBox_MouseDown" AllowDrop="True" PreviewDragOver="filepathTextBox_PreviewDragOver" PreviewDrop="filepathTextBox_PreviewDrop" Cursor="Arrow" Text="&#x0a; Перетащите нужный файл или кликните для выбора вручную" FontSize="18" Opacity="0.5" TextAlignment="Center" AcceptsReturn="True" Grid.ColumnSpan="3"/>
         <RadioButton x:Name="useFileRadioBtn" Content="Выбрать файл" HorizontalAlignment="Left" Margin="10,62,0,0" VerticalAlignment="Top" Width="110" RenderTransformOrigin="0.489,0.534" IsChecked="True" Checked="useFileRadioBtn_Checked" FontSize="14" Height="18"/>
         <RadioButton x:Name="inputCodeRadioBtn" Content="Ввести код" HorizontalAlignment="Left" Margin="10,199,0,0" VerticalAlignment="Top" Width="101" RenderTransformOrigin="0.465,0.45" Checked="inputCodeRadioBtn_Checked" FontSize="14" Height="18" />
-        <Button x:Name="createDiagramBtn" Content="Создать диаграму" Margin="10,9.333,11.667,0" Background="{DynamicResource {x:Static SystemColors.MenuHighlightBrushKey}}" FontSize="14" IsEnabled="False" Click="CreateDiagramBtn_Click" Grid.Row="3" Height="38" VerticalAlignment="Top"/>
+        <Button x:Name="createDiagramBtn" Content="Создать диаграму" Margin="10,9.6,12,0" Background="{DynamicResource {x:Static SystemColors.MenuHighlightBrushKey}}" FontSize="14" IsEnabled="False" Click="CreateDiagramBtn_Click" Grid.Row="3" Height="38" VerticalAlignment="Top"/>
         <Label Content="Выберите язык:" HorizontalAlignment="Left" Margin="10,14,0,0" VerticalAlignment="Top" Width="128" FontSize="14" Height="29"/>
         <ComboBox x:Name="chooseLangComboBox" HorizontalAlignment="Left" Margin="126,14,0,0" VerticalAlignment="Top" Width="66" SelectedIndex="0" BorderBrush="{x:Null}" Height="29" SelectionChanged="chooseLangComboBox_SelectionChanged" FontSize="14" Background="White"/>
-        <TextBox x:Name="searchSaveFilderTextBox" Margin="10,35.333,11.333,0" Grid.Row="1" TextWrapping="Wrap" FontSize="18" Grid.ColumnSpan="2" IsEnabled="False" Height="30" VerticalAlignment="Top"/>
-        <Button x:Name="searchSaveFolderBtn" Content="Изменить" Grid.Column="1" Margin="176.667,36,0,0" Grid.Row="1" FontSize="14" HorizontalAlignment="Left" Width="80" Click="SearchSaveFolderBtn_Click" IsEnabled="False" Height="29" VerticalAlignment="Top" Grid.ColumnSpan="2"/>
-        <Label x:Name="searchSaveFilderLabel" Content="Директория для сохранения диаграммы:" HorizontalAlignment="Left" Margin="8,1.333,0,0" Grid.Row="1" VerticalAlignment="Top" FontSize="14" Opacity="0.5" Height="29" Width="273"/>
+        <TextBox x:Name="searchSaveFilderTextBox" Margin="10,35,4.8,0" Grid.Row="1" TextWrapping="Wrap" FontSize="18" Grid.ColumnSpan="2" IsEnabled="False" Height="30" VerticalAlignment="Top"/>
+        <Button x:Name="searchSaveFolderBtn" Content="Изменить" Grid.Column="2" Margin="0.2,36,20.8,0" Grid.Row="1" FontSize="14" Click="SearchSaveFolderBtn_Click" IsEnabled="False" Height="29" VerticalAlignment="Top"/>
+        <Label x:Name="searchSaveFilderLabel" Content="Директория для сохранения диаграммы:" HorizontalAlignment="Left" Margin="8,1,0,0" Grid.Row="1" VerticalAlignment="Top" FontSize="14" Opacity="0.5" Height="29" Width="273"/>
     </Grid>
 </Window>

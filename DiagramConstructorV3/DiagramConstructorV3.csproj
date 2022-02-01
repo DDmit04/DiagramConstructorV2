@@ -43,6 +43,9 @@
     </StartupObject>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ICSharpCode.AvalonEdit, Version=6.1.3.50, Culture=neutral, PublicKeyToken=9cc39be672370310, processorArchitecture=MSIL">
+      <HintPath>..\packages\AvalonEdit.6.1.3.50\lib\net45\ICSharpCode.AvalonEdit.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Office.Interop.Visio, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
@@ -68,20 +71,27 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="src\app\builder\data\BranchContext.cs" />
+    <Compile Include="src\app\builder\data\ConnectionMaserType.cs" />
     <Compile Include="src\app\builder\data\NodesBranchRelation.cs" />
     <Compile Include="src\app\builder\data\ShapeConnectionType.cs" />
     <Compile Include="src\app\builder\data\ShapeForm.cs" />
     <Compile Include="src\app\builder\data\ShapeWrapper.cs" />
+    <Compile Include="src\app\builder\DefaultDiagramBuilder.cs" />
     <Compile Include="src\app\builder\DiagramBuilder.cs" />
     <Compile Include="src\app\builder\VisioApi.cs" />
     <Compile Include="src\app\codeCleaner\CodeCleaner.cs" />
     <Compile Include="src\app\codeCleaner\CppCodeCleaner.cs" />
+    <Compile Include="src\app\exceptions\ExceptionLogger.cs" />
     <Compile Include="src\app\exceptions\LexException.cs" />
     <Compile Include="src\app\exceptions\ParseException.cs" />
     <Compile Include="src\app\exceptions\ParseRuleException.cs" />
     <Compile Include="src\app\exceptions\ParseRuleNotFoundException.cs" />
     <Compile Include="src\app\exceptions\PatternException.cs" />
+    <Compile Include="src\app\parser\data\MethodType.cs" />
+    <Compile Include="src\app\parser\parseConfig\DefaultParseConfig.cs" />
+    <Compile Include="src\app\parser\parseConfig\ParseConfig.cs" />
     <Compile Include="src\app\parser\ParseRule.cs" />
+    <Compile Include="src\app\tokenFilter\StrictEditTokensFilter.cs" />
     <Compile Include="src\app\tokenPattern\boundaryPatterns\TokensBlockPattern.cs" />
     <Compile Include="src\app\tokenPattern\boundaryPatterns\StartEndTokensPattern.cs" />
     <Compile Include="src\app\tokenPattern\boundaryPatterns\TokensBlockWithExcludePattern.cs" />
@@ -118,13 +128,15 @@
     <Compile Include="src\app\threeController\structureController\CppThreeStructureController.cs" />
     <Compile Include="src\app\threeController\structureController\ThreeStructureController.cs" />
     <Compile Include="src\app\threeController\textController\CppThreeTextController.cs" />
-    <Compile Include="src\app\threeController\textController\NodeTextFormatRule.cs" />
+    <Compile Include="src\app\threeController\textController\NodeTokensFormatRule.cs" />
     <Compile Include="src\app\threeController\textController\ThreeTextController.cs" />
     <Compile Include="src\app\utils\BuilderUtils.cs" />
+    <Compile Include="src\app\utils\LoopNameGenerator.cs" />
     <Compile Include="src\app\utils\TokenSearchUtils.cs" />
     <Compile Include="src\app\utils\TokenUtils.cs" />
     <Compile Include="src\app\utils\StringUtils.cs" />
     <Compile Include="src\AppConfiguration.cs" />
+    <Compile Include="src\DiagramCreateProps.cs" />
     <Compile Include="src\DiagramCreator.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -134,7 +146,6 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\ExceptionLogger.cs" />
     <Compile Include="src\language\CppLanguage.cs" />
     <Compile Include="src\language\Language.cs" />
     <Compile Include="MainWindow.xaml.cs">
@@ -160,6 +171,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
