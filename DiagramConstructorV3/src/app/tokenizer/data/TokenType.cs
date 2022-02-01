@@ -43,8 +43,11 @@
         SHARP,
         COMMA,
         LINE_END,
-        TAB,
+        
         NEW_LINE,
+        TABULATION,
+        CARRIAGE_RETURN,
+        
         ESCAPED_DOUBLE_QUOTE,
         ESCAPED_SINGLE_QUOTE,
         DOUBLE_QUOTE,

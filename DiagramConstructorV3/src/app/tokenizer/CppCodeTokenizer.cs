@@ -53,6 +53,10 @@ namespace DiagramConstructorV3.app.tokenizer
             LexRules.Add(new LexRule(TokenType.COMMA, new Regex(",")));
             LexRules.Add(new LexRule(TokenType.SHARP, new Regex("#")));
             LexRules.Add(new LexRule(TokenType.ESCAPE_CHAR, new Regex(@"\\")));
+            
+            LexRules.Add(new LexRule(TokenType.NEW_LINE, new Regex(@"\n")));
+            LexRules.Add(new LexRule(TokenType.TABULATION, new Regex(@"\t")));
+            LexRules.Add(new LexRule(TokenType.CARRIAGE_RETURN, new Regex(@"\r")));
 
             LexRules.Add(new LexRule(TokenType.LANG_SPECIFIC, new Regex("<<")));
             LexRules.Add(new LexRule(TokenType.LANG_SPECIFIC, new Regex("«")));

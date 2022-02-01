@@ -18,7 +18,7 @@ namespace DiagramConstructorV3.app.codeCleaner
             //single-line comments
             ReplaceRegexps.Add(new Regex(@"(\/\/)(.+?)(?=[\n\r]|\*\))"));
             
-            ReplaceRegexps.Add(new Regex(@"\r|\n|\t"));
+            ReplaceRegexps.Add(new Regex(@"\r|\t"));
         }
 
         public override string CleanCodeBeforeParse(string code)
