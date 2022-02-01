@@ -3,12 +3,12 @@ using DiagramConstructorV3.app.tokenFilter;
 
 namespace DiagramConstructorV3.app.threeController.textController
 {
-    public class NodeTextFormatRule
+    public class NodeTokensFormatRule
     {
         public NodeType ApplyToNodeType { get; }
         protected TokenFilter Filter { get; }
 
-        public NodeTextFormatRule(NodeType applyToNodeType, TokenFilter filter)
+        public NodeTokensFormatRule(NodeType applyToNodeType, TokenFilter filter)
         {
             ApplyToNodeType = applyToNodeType;
             Filter = filter;

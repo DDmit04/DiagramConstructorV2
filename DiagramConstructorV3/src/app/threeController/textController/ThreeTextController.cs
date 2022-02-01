@@ -1,17 +1,22 @@
 ﻿using System.Collections.Generic;
 using DiagramConstructorV3.app.parser.data;
+using DiagramConstructorV3.app.utils;
 
 namespace DiagramConstructorV3.app.threeController.textController
 {
     public class ThreeTextController
     {
-        protected readonly List<NodeTextFormatRule> FormatRules = new List<NodeTextFormatRule>();
+        protected readonly List<NodeTokensFormatRule> FormatRules = new List<NodeTokensFormatRule>();
 
         public List<Method> ApplyTextRules(List<Method> methods)
         {
             foreach (var method in methods)
             {
                 ApplyTextRules(method.MethodNodes);
+            }
+            foreach (var method in methods)
+            {
+                SetNodeTexts(method.MethodNodes);
             }
 
             return methods;
@@ -21,22 +26,35 @@ namespace DiagramConstructorV3.app.threeController.textController
         {
             foreach (var node in nodes)
             {
-                if(node.ChildNodes.Count != 0)
+                if(node.SecondaryChildNodes.Count != 0)
                 {
-                    ApplyTextRules(node.ChildNodes);
+                    ApplyTextRules(node.SecondaryChildNodes);
                 }
-                if(node.ChildElseNodes.Count != 0)
+                if(node.PrimaryChildNodes.Count != 0)
                 {
-                    ApplyTextRules(node.ChildElseNodes);
-                }
-                if(node.ChildIfNodes.Count != 0)
-                {
-                    ApplyTextRules(node.ChildIfNodes);
+                    ApplyTextRules(node.PrimaryChildNodes);
                 }
                 foreach (var rule in FormatRules)
                 {
                     rule.TryApplyRule(node);
                 }
+            }
+        }
+        
+        public void SetNodeTexts(List<Node> nodes)
+        {
+            foreach (var node in nodes)
+            {
+                if(node.SecondaryChildNodes.Count != 0)
+                {
+                    ApplyTextRules(node.SecondaryChildNodes);
+                }
+                if(node.PrimaryChildNodes.Count != 0)
+                {
+                    ApplyTextRules(node.PrimaryChildNodes);
+                }
+
+                node.NodeText = TokenUtils.TokensToString(node.NodeTokens);
             }
         }
     }

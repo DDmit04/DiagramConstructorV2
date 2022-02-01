@@ -18,25 +18,30 @@ namespace DiagramConstructorV3.app.threeController.structureController
                 CompareElseIfNodes(method.MethodNodes);
                 CompareNodes(method.MethodNodes);
                 FormatNodeTree(method.MethodNodes);
+                AddBeginEndNodes(method.MethodNodes);
             }
             return methodsToAnalyze;
+        }
+
+        protected void AddBeginEndNodes(List<Node> nodes)
+        {
+            var beginNode = new Node(NodeType.BEGIN, "Начало");
+            var endNode = new Node(NodeType.END, "Конец");
+            nodes.Insert(0, beginNode);
+            nodes.Add(endNode);
         }
         
         protected List<Node> CompareElseIfNodes(List<Node> nodes)
         {
             foreach (var node in nodes)
             {
-                if (node.ChildNodes.Count > 0)
+                if (node.PrimaryChildNodes.Count > 0)
                 {
-                    node.ChildNodes = CompareElseIfNodes(node.ChildNodes);
+                    node.PrimaryChildNodes = CompareElseIfNodes(node.PrimaryChildNodes);
                 }
-                if (node.ChildIfNodes.Count > 0)
+                if (node.SecondaryChildNodes.Count > 0)
                 {
-                    node.ChildIfNodes = CompareElseIfNodes(node.ChildIfNodes);
-                }
-                if (node.ChildElseNodes.Count > 0)
-                {
-                    node.ChildElseNodes = CompareElseIfNodes(node.ChildElseNodes);
+                    node.SecondaryChildNodes = CompareElseIfNodes(node.SecondaryChildNodes);
                 }
             }
             var index = nodes.FindLastIndex(nde => nde.NodeType == NodeType.ELSE || nde.NodeType == NodeType.ELSE_IF);
@@ -47,18 +52,26 @@ namespace DiagramConstructorV3.app.threeController.structureController
                 {
                     if (prevNode.NodeType == NodeType.ELSE_IF)
                     {
-                        prevNode.ChildElseNodes = nodes[index].ChildNodes;
+                        prevNode.SecondaryChildNodes = nodes[index].PrimaryChildNodes;
                         nodes.RemoveAt(index);
                     }
                     else
                     {
+                        //TODO
                         throw new Exception();
                     }
                     index--;
                     prevNode = nodes[index - 1];
                 }
 
-                prevNode.ChildElseNodes = new List<Node>() { nodes[index] };
+                if (nodes[index].NodeType == NodeType.ELSE)
+                {
+                    prevNode.SecondaryChildNodes = nodes[index].PrimaryChildNodes;
+                }
+                else
+                {
+                    prevNode.SecondaryChildNodes = new List<Node>() { nodes[index] };
+                }
                 nodes.RemoveAt(index);
                 index = nodes.FindLastIndex(nde => nde.NodeType == NodeType.ELSE);
             }
@@ -69,17 +82,13 @@ namespace DiagramConstructorV3.app.threeController.structureController
         {
             foreach (var node in nodesToAnalyze)
             {
-                if (NodeBranchNeedsAnalyze(node.ChildNodes))
+                if (NodeBranchNeedsAnalyze(node.PrimaryChildNodes))
                 {
-                    node.ChildNodes = CompareNodes(node.ChildNodes);
+                    node.PrimaryChildNodes = CompareNodes(node.PrimaryChildNodes);
                 }
-                if (NodeBranchNeedsAnalyze(node.ChildIfNodes))
+                if (NodeBranchNeedsAnalyze(node.SecondaryChildNodes))
                 {
-                    node.ChildIfNodes = CompareNodes(node.ChildIfNodes);
-                }
-                if (NodeBranchNeedsAnalyze(node.ChildElseNodes))
-                {
-                    node.ChildElseNodes = CompareNodes(node.ChildElseNodes);
+                    node.SecondaryChildNodes = CompareNodes(node.SecondaryChildNodes);
                 }
             }
             var pervNode = nodesToAnalyze[nodesToAnalyze.Count - 1];
@@ -105,17 +114,13 @@ namespace DiagramConstructorV3.app.threeController.structureController
         {
             foreach (var node in methodNodes)
             {
-                if (NodeBranchNeedsAnalyze(node.ChildIfNodes))
+                if (NodeBranchNeedsAnalyze(node.PrimaryChildNodes))
                 {
-                    FormatNodeTree(node.ChildIfNodes);
+                    FormatNodeTree(node.PrimaryChildNodes);
                 }
-                if (NodeBranchNeedsAnalyze(node.ChildElseNodes))
+                if (NodeBranchNeedsAnalyze(node.SecondaryChildNodes))
                 {
-                    FormatNodeTree(node.ChildElseNodes);
-                }
-                if (NodeBranchNeedsAnalyze(node.ChildNodes))
-                {
-                    FormatNodeTree(node.ChildNodes);
+                    FormatNodeTree(node.SecondaryChildNodes);
                 }
             }
             if (methodNodes.Count > 1)
@@ -167,10 +172,10 @@ namespace DiagramConstructorV3.app.threeController.structureController
         {
             var res = new List<Token>();
             res.AddRange(firstText.NodeTokens);
-            res.Add(new Token(TokenType.COMMA, ","));
+            res.Add(new Token(TokenType.COMMA, ",", -1));
             if (firstText.NodeText.Length > 15 || secText.NodeText.Length > 15)
             {
-                res.Add(new Token(TokenType.LINE_END, "\n"));
+                res.Add(new Token(TokenType.LINE_END, "\n", -1));
             }
             res.AddRange(secText.NodeTokens);
             return res;
