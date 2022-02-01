@@ -1,7 +1,8 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 
-namespace DiagramConstructorV3
+namespace DiagramConstructorV3.app.exceptions
 {
     static class ExceptionLogger
     {
@@ -10,19 +11,28 @@ namespace DiagramConstructorV3
 
         public static string LogException(Exception exception, string codeToBuildDiagram, string additionalInfo = "")
         {
-            string newLogFilePath = LogFolder + "exception_" + GetLogDate() + LogFileExt;
+            var newLogFilePath = LogFolder + "exception_" + GetLogDate() + LogFileExt;
             newLogFilePath = WriteToLog(newLogFilePath, exception, codeToBuildDiagram, additionalInfo);
             return newLogFilePath;
+        }
+
+        public static string LogParseException(ParseException exception, string codeToBuildDiagram,
+            string additionalInfo = "")
+        {
+            additionalInfo +=
+                $"Node parse error: {exception.ParsedNodeType}! Error tokens start - [{string.Join(", ", exception.ErrorTokens.Select(t => t.TokenType))}]";
+            return LogException(exception, codeToBuildDiagram, additionalInfo);
         }
 
         public static string LogWarning(Exception exception, string codeToBuildDiagram, string additionalInfo = "")
-        { 
-            string newLogFilePath = LogFolder + "warning_" + GetLogDate() + LogFileExt;
+        {
+            var newLogFilePath = LogFolder + "warning_" + GetLogDate() + LogFileExt;
             newLogFilePath = WriteToLog(newLogFilePath, exception, codeToBuildDiagram, additionalInfo);
             return newLogFilePath;
         }
 
-        private static string WriteToLog(string filepath, Exception exception, string codeToBuildDiagram, string additionalInfo)
+        private static string WriteToLog(string filepath, Exception exception, string codeToBuildDiagram,
+            string additionalInfo)
         {
             try
             {
@@ -30,13 +40,15 @@ namespace DiagramConstructorV3
                 {
                     Directory.CreateDirectory(LogFolder);
                 }
+
                 File.Create(filepath).Dispose();
-                using (StreamWriter writer = File.AppendText(filepath))
+                using (var writer = File.AppendText(filepath))
                 {
                     if (additionalInfo != "")
                     {
                         writer.WriteLine("Additional Info: " + additionalInfo);
                     }
+
                     writer.WriteLine("Date: " + DateTime.Now);
                     writer.WriteLine("Type: " + exception.GetType());
                     writer.WriteLine("Message: " + exception.Message);
@@ -48,6 +60,7 @@ namespace DiagramConstructorV3
             {
                 return "";
             }
+
             return filepath;
         }
 
@@ -55,6 +68,5 @@ namespace DiagramConstructorV3
         {
             return DateTime.Now.ToString("MM_dd_yyyy-HH_mm_ss");
         }
-
     }
 }

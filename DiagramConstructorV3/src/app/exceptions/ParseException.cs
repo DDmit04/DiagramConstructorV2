@@ -1,19 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using DiagramConstructorV3.app.parser.data;
 using DiagramConstructorV3.app.tokenizer.data;
-using DiagramConstructorV3.app.tokenPattern;
 
 namespace DiagramConstructorV3.app.exceptions
 {
     public class ParseException : Exception
     {
+        public NodeType ParsedNodeType { get; }
+        public int ErrorLineNumber { get; }
         public List<Token> ErrorTokens { get; }
-        public ParseException(List<Token> errorTokens, int errorStart)
+        public ParseException(List<Token> errorTokens, int errorStart, NodeType parsedNodeType = NodeType.OTHER)
         {
+            ParsedNodeType = parsedNodeType;
             var errorTokensCount = errorTokens.Count - errorStart;
             List<Token> errorStartTokens;
-            if (errorTokensCount >= 3)
+            if (errorTokensCount - errorStart > 10)
             {
                 errorStartTokens = errorTokens.GetRange(errorStart, 10);
             }
@@ -22,6 +24,7 @@ namespace DiagramConstructorV3.app.exceptions
                 errorStartTokens = errorTokens.GetRange(errorStart, errorTokensCount);
             }
             ErrorTokens = errorStartTokens;
+            ErrorLineNumber = ErrorTokens[0].LineNumber;
         }
     }
 }
