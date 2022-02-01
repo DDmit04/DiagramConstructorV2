@@ -17,7 +17,10 @@ namespace DiagramConstructorV3.app.parser.data
         SWITCH_DEFAULT,
         PROGRAM,
         PROCESS,
-        ANY
+        ANY,
+        OTHER,
+        BEGIN,
+        END,
     }
     static class NodeTypeMethods
     {
@@ -33,14 +36,16 @@ namespace DiagramConstructorV3.app.parser.data
                 case NodeType.FOR:
                     return ShapeForm.FOR;
                 case NodeType.WHILE:
-                    return ShapeForm.WHILE;
                 case NodeType.DO_WHILE:
-                    return ShapeForm.DO;
+                    return ShapeForm.LOOP_START;
                 case NodeType.INPUT:
                 case NodeType.OUTPUT:
                     return ShapeForm.IN_OUT_PUT;
                 case NodeType.PROGRAM:
                     return ShapeForm.PROGRAM;
+                case NodeType.BEGIN:
+                case NodeType.END:
+                    return ShapeForm.BEGIN_END;
                 default:
                     return ShapeForm.PROCESS;
             }

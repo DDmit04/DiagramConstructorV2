@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DiagramConstructorV3.app.exceptions;
 using DiagramConstructorV3.app.parser.data;
-using DiagramConstructorV3.app.threeController.textController;
+using DiagramConstructorV3.app.parser.parseConfig;
 using DiagramConstructorV3.app.tokenizer.data;
 using DiagramConstructorV3.app.tokenPattern;
 using DiagramConstructorV3.app.tokenPattern.boundaryPatterns;
@@ -25,33 +25,13 @@ namespace DiagramConstructorV3.app.parser
         protected readonly ComboPatternByFirstMatchBuilder PatternByFirstMatchBuilder =
             new ComboPatternByFirstMatchBuilder();
 
-        protected readonly TokensBlockWithExcludePatternBuilder TokensBlockWithExcludePatternBuilder =
-            new TokensBlockWithExcludePatternBuilder();
+        protected List<ParseRule> ParseRules = new List<ParseRule>();
 
-        protected TokenPattern ArgsPattern;
-        protected TokenPattern MethodDefPattern;
+        protected ParseConfig ParseConfig;
 
-        protected List<ParseRule> ParseRules;
-
-        public CodeParser()
+        protected CodeParser(ParseConfig parseConfig)
         {
-            ArgsPattern = TokensBlockWithExcludePatternBuilder
-                .Reset()
-                .StartWith(TokenType.ARGS_OPEN)
-                .ExceptRange(
-                    Enum.GetValues(typeof(TokenType))
-                        .Cast<TokenType>()
-                        .Where(t => t.IsOperatorToken())
-                        .ToList())
-                .Except(TokenType.ACCESS_MODIFICATOR)
-                .EndWith(TokenType.ARGS_CLOSE)
-                .Build();
-            MethodDefPattern = StrictPatternBuilder
-                .Reset()
-                .NextPattern(new SingleTokenPattern(TokenType.IDENTIFIER))
-                .NextPattern(ArgsPattern)
-                .NextPattern(TokensBlockPattern.BracketBlock)
-                .Build();
+            ParseConfig = parseConfig;
         }
 
         public List<Method> ParseCode(List<Token> tokensToParse)
@@ -61,8 +41,9 @@ namespace DiagramConstructorV3.app.parser
             while (pos < tokensToParse.Count)
             {
                 var methodNodes = new List<Node>();
-                var methodSignature = "main()";
-                var nexMethodMatch = MethodDefPattern.GetMatch(tokensToParse, pos);
+                var methodSignature = ParseConfig.MainMethodName;
+                var methodType = MethodType.COMMON;
+                var nexMethodMatch = ParseConfig.MethodDefPattern.GetMatch(tokensToParse, pos);
                 List<Token> methodBlockTokens;
                 if (nexMethodMatch.IsFullMatch)
                 {
@@ -78,20 +59,24 @@ namespace DiagramConstructorV3.app.parser
 
                     var methodSignatureTokens = GetMethodSignatureTokens(tokensToParse, nexMethodMatch);
                     methodSignature = TokenUtils.TokensToString(methodSignatureTokens);
+                    var methodId = methodSignatureTokens.FirstOrDefault(t => t.TokenType == TokenType.IDENTIFIER);
+                    if (methodId != null && methodId.TokenText == ParseConfig.MainMethodName)
+                    {
+                        methodType = MethodType.MAIN;
+                    }
+                    methodBlockTokens = GetMethodBlockTokens(tokensToParse, nexMethodMatch);
                     if (globalNodes.Count > 0)
                     {
                         methodNodes.AddRange(globalNodes);
                     }
-
-                    methodBlockTokens = GetMethodBlockTokens(tokensToParse, nexMethodMatch);
                 }
                 else
                 {
                     methodBlockTokens = tokensToParse;
                 }
 
-                methodNodes = ParseBlock(methodBlockTokens);
-                var newMethod = new Method(methodSignature, methodNodes);
+                methodNodes.AddRange(ParseBlock(methodBlockTokens));
+                var newMethod = new Method(methodSignature, methodNodes, methodType);
                 methods.Add(newMethod);
             }
 
@@ -145,7 +130,7 @@ namespace DiagramConstructorV3.app.parser
             if (methodMatch.MatchesCount > 2)
             {
                 var methodBlockMatch = methodMatch.GetMatch(2);
-                var methodBlockTokens = TokenUtils.GetMatchResultTokens(tokens, methodBlockMatch);
+                var methodBlockTokens = TokenUtils.GetMatchResultBlockTokens(tokens, methodBlockMatch);
                 return methodBlockTokens;
             }
             throw new ParseException(tokens, methodMatch.Start);
@@ -156,7 +141,7 @@ namespace DiagramConstructorV3.app.parser
             return PatternByFirstMatchBuilder
                 .Reset()
                 .NextPattern(new SingleTokenPattern(operatorType))
-                .NextPattern(ArgsPattern)
+                .NextPattern(ParseConfig.ArgsPattern)
                 .NextPattern(TokensBlockPattern.BracketBlock)
                 .Build();
         }
@@ -180,15 +165,15 @@ namespace DiagramConstructorV3.app.parser
                         var childNodes = ParseBlock(blockTokens);
 
                         var newNode = new Node(NodeType.ELSE);
-                        newNode.ChildNodes = childNodes;
+                        newNode.PrimaryChildNodes = childNodes;
                         return newNode;
                     }
                     else if (!blockMatch.IsFullMatch)
                     {
-                        throw new ParseRuleException(pattern, tokens, matchResult.Start);
+                        throw new ParseRuleException(pattern, tokens, matchResult.Start, NodeType.ELSE);
                     }
                 }
-                throw new ParseException(tokens, matchResult.Start);
+                throw new ParseException(tokens, matchResult.Start, NodeType.ELSE);
             };
         }
 
@@ -215,17 +200,17 @@ namespace DiagramConstructorV3.app.parser
                         var argsTokens = TokenUtils.GetMatchResultTokens(tokens, argsMatch);
 
                         var newNode = new Node(NodeType.DO_WHILE, argsTokens);
-                        newNode.ChildNodes = childNodes;
+                        newNode.PrimaryChildNodes = childNodes;
                         return newNode;
                     }
                     else if (!blockMatch.IsFullMatch || !whileOperatorMatch.IsFullMatch || !argsMatch.IsFullMatch ||
                              !lineEndMatch.IsFullMatch)
                     {
-                        throw new ParseRuleException(pattern, tokens, matchResult.Start);
+                        throw new ParseRuleException(pattern, tokens, matchResult.Start, NodeType.WHILE);
                     }
                 }
 
-                throw new ParseException(tokens, matchResult.Start);
+                throw new ParseException(tokens, matchResult.Start, NodeType.WHILE);
             };
         }
 
@@ -250,15 +235,15 @@ namespace DiagramConstructorV3.app.parser
                         var childNodes = ParseBlock(blockTokens);
 
                         var newNode = new Node(nodeType, argsTokens);
-                        newNode.ChildNodes = childNodes;
+                        newNode.PrimaryChildNodes = childNodes;
                         return newNode;
                     }
                     else if (!argsMatch.IsFullMatch || !blockMatch.IsFullMatch)
                     {
-                        throw new ParseRuleException(pattern, tokens, matchResult.Start);
+                        throw new ParseRuleException(pattern, tokens, matchResult.Start, nodeType);
                     }
                 }
-                throw new ParseException(tokens, matchResult.Start);
+                throw new ParseException(tokens, matchResult.Start, nodeType);
             };
         }
 
@@ -277,7 +262,7 @@ namespace DiagramConstructorV3.app.parser
                     var newNode = new Node(nodeType, nodeTokens);
                     return newNode;
                 } 
-                throw new ParseRuleException(pattern, tokens, matchResult.Start);
+                throw new ParseRuleException(pattern, tokens, matchResult.Start, nodeType);
             };
         }
         
