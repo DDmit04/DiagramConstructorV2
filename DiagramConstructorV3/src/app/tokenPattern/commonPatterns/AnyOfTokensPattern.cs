@@ -18,12 +18,30 @@ namespace DiagramConstructorV3.app.tokenPattern.commonPatterns
 
         public override PatternMatchResult GetMatch(List<Token> tokens, int @from = 0)
         {
-            return TokenSearchUtils.FindFirstOneTokenIndex(tokens, TokensToSearch, from);
-        }
+            if (TokensToSearch.Count == 1)
+            {
+                return TokenSearchUtils.FindToken(tokens, TokensToSearch[0], from);
+            }
+            var firstTokenIndex = int.MaxValue;
+            foreach (var tokenType in TokensToSearch)
+            {
+                var lexMatchResult = TokenSearchUtils.FindToken(tokens, tokenType, from);
+                if (lexMatchResult.IsFullMatch && lexMatchResult.Start < firstTokenIndex)
+                {
+                    firstTokenIndex = lexMatchResult.Start;
+                }
+            }
 
-        public void AddToken(TokenType newToken)
+            if (firstTokenIndex == int.MaxValue)
+            {
+                return PatternMatchResult.Empty;
+            }
+            return new PatternMatchResult(firstTokenIndex, firstTokenIndex + 1);        }
+
+        public override string ToString()
         {
-            TokensToSearch.Add(newToken);
+            var res = "Any of: [ " + string.Join(", ", TokensToSearch) + " ]";
+            return res;
         }
     }
 }

@@ -21,13 +21,21 @@ namespace DiagramConstructorV3.app.tokenPattern.boundaryPatterns
 
         public override PatternMatchResult GetMatch(List<Token> tokens, int @from = 0)
         {
-            var matchBlock = TokenSearchUtils.FindNextTokenBlock(tokens, BlockStartToken, BlockEndToken, from);
-            var matchTokens = TokenUtils.GetMatchResultTokens(tokens, matchBlock);
-            if (matchTokens.Any(t => ExcludeList.Contains(t.TokenType)))
+            var matchBlock = base.GetMatch(tokens, from);
+            if (matchBlock.IsFullMatch)
             {
-                return PatternMatchResult.Empty;
+                var matchTokens = TokenUtils.GetMatchResultTokens(tokens, matchBlock);
+                if (matchTokens.Any(t => ExcludeList.Contains(t.TokenType)))
+                {
+                    return PatternMatchResult.Empty;
+                }
             }
             return matchBlock;
+        }
+        public override string ToString()
+        {
+            var res = "Block: [ " + BlockStartToken + " <any tokens except: (" + string.Join(" ,", ExcludeList) + ")> " + BlockEndToken + " ]";
+            return res;
         }
     }
 }

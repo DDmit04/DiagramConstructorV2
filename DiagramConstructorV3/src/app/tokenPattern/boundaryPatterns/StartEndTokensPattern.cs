@@ -35,5 +35,11 @@ namespace DiagramConstructorV3.app.tokenPattern.boundaryPatterns
             }
             return PatternMatchResult.Empty;
         }
+        
+        public override string ToString()
+        {
+            var res = "Start-end: [ " + StartPattern + " <any tokens> " + EndPattern + " ]";
+            return res;
+        }
     }
 }

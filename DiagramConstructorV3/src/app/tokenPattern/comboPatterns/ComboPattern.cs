@@ -17,9 +17,10 @@ namespace DiagramConstructorV3.app.tokenPattern.comboPatterns
         
         public abstract override PatternMatchResult GetMatch(List<Token> tokens, int @from = 0);
         
-        public void AddPattern(TokenPattern newPattern)
+        public override string ToString()
         {
-            Patterns.Add(newPattern);
+            var res = "Combo: [ " + string.Join(" -> ", Patterns) + " ]";
+            return res;
         }
     }
 }

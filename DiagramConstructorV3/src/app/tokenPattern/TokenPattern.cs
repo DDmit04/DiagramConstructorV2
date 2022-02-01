@@ -8,6 +8,6 @@ namespace DiagramConstructorV3.app.tokenPattern
     {
         public abstract int ConditionsCount { get; }
         public abstract PatternMatchResult GetMatch(List<Token> tokens, int from = 0);
-
+        public abstract override string ToString();
     }
 }

@@ -17,7 +17,12 @@ namespace DiagramConstructorV3.app.tokenPattern.commonPatterns
 
         public override PatternMatchResult GetMatch(List<Token> tokens, int @from = 0)
         {
-            return TokenSearchUtils.FindNextTokenIndex(tokens, Token, from);
+            return TokenSearchUtils.FindToken(tokens, Token, from);
+        }
+
+        public override string ToString()
+        {
+            return "Single: [ " + Token + " ]";
         }
     }
 }
