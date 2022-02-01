@@ -16,11 +16,6 @@ namespace DiagramConstructorV3.app.utils
 
             return "";
         }
-        public static string MatchToString(List<Token> tokens, AbstractPatternMatch matchResult)
-        {
-            var tokensBlock = GetMatchResultTokens(tokens, matchResult);
-            return TokensToString(tokensBlock);
-        }
         public static List<Token> GetMatchResultTokens(List<Token> tokens, AbstractPatternMatch matchResult)
         {
             return tokens.GetRange(matchResult.Start, matchResult.Length);

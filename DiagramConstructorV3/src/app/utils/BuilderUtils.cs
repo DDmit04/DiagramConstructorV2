@@ -31,23 +31,21 @@ namespace DiagramConstructorV3.app.utils
             }
             else if (nodesBranchRelation == NodesBranchRelation.OTHER_BRANCH)
             {
-                if (oldShape.IsCommonShape || oldShape.ShapeForm == ShapeForm.DO_WHILE)
+                if (oldShape.IsCommonShape)
                 {
                     return ShapeConnectionType.FROM_TOP_TO_BOT;
                 }
-
                 return ShapeConnectionType.FROM_TOP_TO_RIGHT;
             }
             else if (nodesBranchRelation == NodesBranchRelation.PARENT)
             {
                 if (!lastPlacedShape.IsCommonShape)
                 {
-                    if (lastPlacedShape.ShapeForm == ShapeForm.DO_WHILE)
+                    if (oldShape.IsCommonShape)
                     {
-                        return ShapeConnectionType.FROM_LEFT_TO_LEFT;
+                        return ShapeConnectionType.FROM_BOT_TO_LEFT;
                     }
-
-                    if (!oldShape.IsCommonShape)
+                    else
                     {
                         return ShapeConnectionType.FROM_RIGHT_TO_LEFT;
                     }
@@ -67,8 +65,8 @@ namespace DiagramConstructorV3.app.utils
         /// <summary>
         /// Out return cells align from given connection type
         /// </summary>
-        /// <param name="connectionFromType">Out cell aligment for connection from shape</param>
-        /// <param name="connectionToType">Out cell aligment for connection to shape</param>
+        /// <param name="connectionFromType">Out cell alignment for connection from shape</param>
+        /// <param name="connectionToType">Out cell alignment for connection to shape</param>
         /// <param name="connectionType">type of shape connection</param>
         public static void GetCellsAlignsFromConnectionType(out VisCellIndices connectionFromType,
             out VisCellIndices connectionToType, ShapeConnectionType connectionType)
@@ -120,53 +118,31 @@ namespace DiagramConstructorV3.app.utils
                 return 1;
             }
 
-            var nodeShapeForm = node.NodeShapeForm;
-            double commonBranchMaxLength = 0;
-            double elseBranchMaxLength = 0;
-            double ifBranchMaxLength = 0;
-            foreach (var childNode in node.ChildNodes)
+            ShapeForm nodeShapeForm;
+            double primaryBranchMaxLength = 0;
+            double secondaryBranchMaxLength = 0;
+            foreach (var childNode in node.PrimaryChildNodes)
             {
-                commonBranchMaxLength++;
-                commonBranchMaxLength += CalcThreeHeight(childNode);
+                primaryBranchMaxLength++;
+                primaryBranchMaxLength += CalcThreeHeight(childNode);
                 nodeShapeForm = childNode.NodeShapeForm;
-                if (nodeShapeForm == ShapeForm.WHILE || nodeShapeForm == ShapeForm.FOR ||
-                    nodeShapeForm == ShapeForm.IF || nodeShapeForm == ShapeForm.DO)
+                if (nodeShapeForm == ShapeForm.IF)
                 {
-                    commonBranchMaxLength += 1;
+                    primaryBranchMaxLength += 0.3;
                 }
             }
 
-            foreach (var childNode in node.ChildIfNodes)
+            foreach (var childNode in node.SecondaryChildNodes)
             {
-                ifBranchMaxLength++;
-                ifBranchMaxLength += CalcThreeHeight(childNode);
+                secondaryBranchMaxLength++;
+                secondaryBranchMaxLength += CalcThreeHeight(childNode);
                 nodeShapeForm = childNode.NodeShapeForm;
-                if (nodeShapeForm == ShapeForm.WHILE || nodeShapeForm == ShapeForm.FOR ||
-                    nodeShapeForm == ShapeForm.IF || nodeShapeForm == ShapeForm.DO)
+                if (nodeShapeForm == ShapeForm.IF)
                 {
-                    ifBranchMaxLength += 1;
+                    secondaryBranchMaxLength += 0.3;
                 }
             }
-
-            foreach (var childNode in node.ChildElseNodes)
-            {
-                elseBranchMaxLength++;
-                elseBranchMaxLength += CalcThreeHeight(childNode);
-                nodeShapeForm = childNode.NodeShapeForm;
-                if (nodeShapeForm == ShapeForm.WHILE || nodeShapeForm == ShapeForm.FOR ||
-                    nodeShapeForm == ShapeForm.IF || nodeShapeForm == ShapeForm.DO)
-                {
-                    elseBranchMaxLength += 1;
-                }
-            }
-
-            nodeShapeForm = node.NodeShapeForm;
-            var result = Math.Max(commonBranchMaxLength, Math.Max(elseBranchMaxLength, ifBranchMaxLength));
-            if (nodeShapeForm == ShapeForm.WHILE || nodeShapeForm == ShapeForm.FOR ||
-                nodeShapeForm == ShapeForm.IF || nodeShapeForm == ShapeForm.DO)
-            {
-                result -= 0.5;
-            }
+            var result = Math.Max(primaryBranchMaxLength, secondaryBranchMaxLength);
             return result;
         }
     }
