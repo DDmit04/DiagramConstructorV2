@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using DiagramConstructorV3.app.builder.data;
 using DiagramConstructorV3.app.tokenizer.data;
@@ -14,11 +15,10 @@ namespace DiagramConstructorV3.app.parser.data
         {
             get
             {
-                if (_NodeText == "" || _NodeText == null)
+                if (string.IsNullOrEmpty(_NodeText))
                 {
                     return TokenUtils.TokensToString(NodeTokens);
                 }
-
                 return _NodeText;
             }
         }
@@ -26,12 +26,9 @@ namespace DiagramConstructorV3.app.parser.data
         public List<Node> PrimaryChildNodes { get; set; } = new List<Node>();
         public List<Node> SecondaryChildNodes { get; set; } = new List<Node>();
 
-        public NodeType NodeType { get; set; }
+        public NodeType NodeType { get; }
 
-        public ShapeForm NodeShapeForm
-        {
-            get => NodeType.MapToShapeForm();
-        }
+        public ShapeForm NodeShapeForm => NodeType.MapToShapeForm();
 
         private string _NodeText = "";
 
