@@ -9,7 +9,20 @@ namespace DiagramConstructorV3.app.parser.data
     public class Node
     {
         public List<Token> NodeTokens { get; set; } = new List<Token>();
-        public string NodeText { get; set; }
+
+        public string NodeText
+        {
+            get
+            {
+                if (_NodeText == "" || _NodeText == null)
+                {
+                    return TokenUtils.TokensToString(NodeTokens);
+                }
+
+                return _NodeText;
+            }
+        }
+
         public List<Node> PrimaryChildNodes { get; set; } = new List<Node>();
         public List<Node> SecondaryChildNodes { get; set; } = new List<Node>();
 
@@ -20,6 +33,8 @@ namespace DiagramConstructorV3.app.parser.data
             get => NodeType.MapToShapeForm();
         }
 
+        private string _NodeText = "";
+
         public bool NoNeedText => NodeShapeForm == ShapeForm.INVISIBLE_BLOCK;
 
         public bool IsSimpleNode => NodeShapeForm == ShapeForm.PROCESS 
@@ -28,21 +43,20 @@ namespace DiagramConstructorV3.app.parser.data
 
         public Node(NodeType nodeType, string nodeText, List<Token> nodeTokens)
         {
-            NodeText = nodeText;
+            _NodeText = nodeText;
             NodeType = nodeType;
             NodeTokens = nodeTokens;
         }
         
         public Node(NodeType nodeType, string nodeText)
         {
-            NodeText = nodeText;
+            _NodeText = nodeText;
             NodeType = nodeType;
             NodeTokens = new List<Token>();
         }
         
         public Node(NodeType nodeType, List<Token> nodeTokens)
         {
-            NodeText = TokenUtils.TokensToString(NodeTokens);;
             NodeType = nodeType;
             NodeTokens = nodeTokens;
         }

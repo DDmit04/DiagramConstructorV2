@@ -53,8 +53,6 @@ namespace DiagramConstructorV3.app.threeController.textController
                 {
                     ApplyTextRules(node.PrimaryChildNodes);
                 }
-
-                node.NodeText = TokenUtils.TokensToString(node.NodeTokens);
             }
         }
     }
